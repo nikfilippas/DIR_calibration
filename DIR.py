@@ -3,6 +3,8 @@ import numpy as np
 from scipy.spatial import cKDTree
 from astropy.io import fits
 from sklearn.neighbors import NearestNeighbors
+from scipy.interpolate import interp1d
+from scipy.integrate import simps
 
 
 def DIR_weights(fname, cols, N_nearest=20, tree_leaf=30, save=None):
@@ -30,9 +32,9 @@ def DIR_weights(fname, cols, N_nearest=20, tree_leaf=30, save=None):
 
     Returns
     -------
-        weights : `numpy.ndarray`
+        weights : ``numpy.ndarray``
             Weights of the calibration galaxies in the catalogue.
-        idx : `numpy.ndarray`
+        idx : ``numpy.ndarray``
             Indices of the calibration galaxies in the catalogue.
     """
     cat = fits.open(fname)[1].data
@@ -58,17 +60,17 @@ def DIR_weights(fname, cols, N_nearest=20, tree_leaf=30, save=None):
 
 
 def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
-                    jk={"num":0,"thin":0.01,"jk_id":None,"replace":False}):
+                    jk={"do":False,"thin":0.01,"jk_id":None,"replace":False}):
     """
     Calculate redshift probability density function.
 
     Arguments
     ---------
-        xcat : `astropy.io.fits.fitsrec.FITS_rec`
+        xcat : ``astropy.io.fits.fitsrec.FITS_rec``
             Catalogue of the cross-matched calibration galaxies.
-        weights : `numpy.ndarray`
+        weights : ``numpy.ndarray``
             Array containing the weights of the calibration galaxies.
-        bins : array-like
+        bins : `array-like`
             Redshift bins to sample probability distribution function.
             Default: "auto" for automatic creation of the bins.
         save : str
@@ -77,8 +79,8 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
             Whether to return calculated redshift distributions.
         jk : dict
             Jackknife config:
-                num : int
-                    Number of jackknives. Defaults: 0 (use entire sample).
+                do : bool
+                    Do jackknives. Default: ``False``; use entire sample.
                 thin : float
                     Thin out redshift training sample by factor,
                     rounded to nearest integer.
@@ -89,15 +91,15 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
 
     Returns
     -------
-        Nz : `numpy.ndarray`
+        Nz : ``numpy.ndarray``
             The redshift probability density function.
-        z_mid : `numpy.ndarray`
+        z_mid : ``numpy.ndarray``
             Midpoints of the redshift bins.
     """
     # input handling
     if (save is None) and (full_output is False):
         raise ValueError("Either `save` or `full_output` must specify behaviour.")
-    if (jk["num"] != 0) and (type(jk["jk_id"]) not in [int, float]):
+    if jk["do"] and (type(jk["jk_id"]) not in [int, float]):
         raise ValueError("Jackknife ID should be a number.")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
@@ -106,7 +108,7 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
     z_spec = xcat["ZSPEC"]
 
     # jackknife
-    if jk["num"] != 0:
+    if jk["do"]:
         idx = np.random.choice(np.arange(len(xcat)),
                                size=int(np.around(len(xcat)*(1-jk["thin"]))),
                                replace=jk["replace"])
@@ -117,7 +119,46 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
     # output handling
     z_mid = 0.5*(bins[:-1] + bins[1:])
     if save is not None:
-        if jk["num"] != 0: save += "_jk%s" % jk[""]
+        if jk["do"]: save += "_jk%s" % jk["jk_id"]
         np.savez(save, z_arr=z_mid, nz_arr=Nz)
     if full_output:
         return Nz, z_mid
+
+def width_func(z, Nz, width=1, z_avg=None, normed=True):
+    """
+    Stretch the redshift distribution using the width parameter.
+
+    .. math::
+        p(z) \\propto p_{\\rm{fid}}\\left( \\langle z \\rangle +
+                                \\frac{z - \\langle z \\rangle}{w} \\right),
+
+    where :math:`p_{\\rm{fid}}` is the input distribution,
+    :math:`\\langle z \\rangle` is the mean redshift (or anchor point), and
+    :math:`w` is the width parameter.
+
+    Arguments
+    ---------
+        z : ``numpy.ndarray``
+            Sampled redshifts of the redshift distribution.
+        Nz : ``numpy.ndarray``
+            Redshift probability density.
+        width : float
+            Factor to stretch the distribution by.
+        z_avg : float
+            Custom redshift anchor point to stretch the distribution.
+            Default: `None`; use the distribution mean value.
+        normed : bool
+            Re-normalise the modified redhisft distribution.
+
+    Returns
+    -------
+        Nz_w : ``numpy.ndarray``
+            Modified redshift distribution.
+    """
+    nzf = interp1d(z, Nz, kind="cubic", bounds_error=False, fill_value=1.)
+    if z_avg is None:
+        z_avg = np.average(z, weights=Nz)
+    Nz_w = nzf(z_avg + (z-z_avg)/width)
+    if normed:
+        Nz_w /= simps(Nz_w, x=z)
+    return Nz_w
