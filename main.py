@@ -51,3 +51,10 @@ print("Width mean: ", w.mean())
 print("Width std: ", w.std())
 print("Error mean: ", dw.mean())
 print("JK sample size: ", w.size)
+
+"""
+Width mean:  1.000664955020912
+Width std:  0.00015179380925675994
+Error mean:  0.00015800115382416744
+JK sample size:  1000
+"""
