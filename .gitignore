@@ -1,0 +1,4 @@
+__pycache__
+out/jk*.npz
+*.fits
+zSpec-comp-WIxSC.csv
