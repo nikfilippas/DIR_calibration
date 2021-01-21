@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 from astropy.io import fits
-from DIR import DIR_weights, do_jk
+from DIR import DIR_weights, nz_from_weights
 
 fname = "2MPZ_FULL_wspec_coma_complete.fits"
 cat = fits.open(fname)[1].data
@@ -11,6 +11,13 @@ cols = ["JCORR", "HCORR", "KCORR", "W1MCORR",
 
 weights, _ = DIR_weights(fname, cols, save="out/weights")
 
+# entire sample
 bins = np.arange(0, 1, step=0.01)
+prefix = "out/DIR"
+Nz, z_mid = nz_from_weights(xcat, weights, bins=bins, save=prefix, full_output=True)
+
+
+jk={"num":0,"thin":0.01,"jk_id":None,"replace":False}
 for jk_id in tqdm(range(1000)):
-    do_jk(xcat, weights, bins=bins, thin=0.99, jk_id=jk_id, save="out/")
+    jk["jk_id"] = jk_id
+    nz_from_weights(xcat, weights, bins=bins, save=prefix, jk=jk)

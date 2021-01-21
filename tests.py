@@ -2,18 +2,13 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
-from DIR import DIR
 
-fname ="2MPZ_FULL_wspec_coma_complete.fits"
-cat = fits.open(fname)[1].data
+cat = fits.open("2MPZ_FULL_wspec_coma_complete.fits")[1].data
 xcat = cat[np.where(cat["ZSPEC"] != -999.)[0]]
-cols = ["JCORR", "HCORR", "KCORR", "W1MCORR", "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
+cols = ["JCORR", "HCORR", "KCORR", "W1MCORR",
+        "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
 
-d = DIR(fname, cols)
-d.get_nz(save=True)
-weights = d.weights
-bins = np.arange(0, 1, 0.001)  # redshift bin edges
-pz_dir, _ = np.histogram(xcat["ZSPEC"], bins=bins, density=True, weights=weights)
+bins = np.arange(0, 1, 0.005)  # redshift bin edges
 pz_spec, _ = np.histogram(xcat["ZSPEC"], bins=bins, density=True)
 pz_phot, _ = np.histogram(xcat["ZPHOTO"], bins=bins, density=True)
 
@@ -34,12 +29,11 @@ for jk_id in tqdm(range(1000)):
     nz, z_jk = f["nz_arr"], f["z_arr"]
     ax.plot(z_jk, nz, "gray", alpha=0.005)
 
-
 z_mid = 0.5*(bins[:-1] + bins[1:])
 plt.plot(z_mid, pz_phot, "navy", lw=2, label="photometric")
 plt.plot(z_mid, pz_spec, "orange", lw=2, label="spectroscopic")
-plt.plot(z_mid, pz_dir, "green", lw=2, label="DIR")
-
+f_DIR = np.load("out/DIR.npz")
+plt.plot(f_DIR["z_arr"], f_DIR["nz_arr"], "green", lw=2, label="DIR")
 
 ax.legend(loc="upper right", fontsize=12)
 ax.grid(ls=":")

@@ -1,3 +1,4 @@
+import warnings
 import numpy as np
 from scipy.spatial import cKDTree
 from astropy.io import fits
@@ -57,9 +58,9 @@ def DIR_weights(fname, cols, N_nearest=20, tree_leaf=30, save=None):
 
 
 def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
-          jk={"num":0,"thin":0.01,"jk_id":None,"replace":False}):
+                    jk={"num":0,"thin":0.01,"jk_id":None,"replace":False}):
     """
-    Peform jackknives
+    Calculate redshift probability density function.
 
     Arguments
     ---------
@@ -86,7 +87,6 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
                 replace : bool
                     Sample with replacement (bootstrap).
 
-
     Returns
     -------
         Nz : `numpy.ndarray`
@@ -95,22 +95,29 @@ def nz_from_weights(xcat, weights, bins="auto", save=None, full_output=False,
             Midpoints of the redshift bins.
     """
     # input handling
-    if (save is not None) and (type(jk["jk_id"]) not in [int, float]):
+    if (save is None) and (full_output is False):
+        raise ValueError("Either `save` or `full_output` must specify behaviour.")
+    if (jk["num"] != 0) and (type(jk["jk_id"]) not in [int, float]):
         raise ValueError("Jackknife ID should be a number.")
-    if bins == "auto":
-        bins = np.arange(0, 1, step=0.001)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if bins == "auto":  # FutureWarning
+            bins = np.arange(0, 1, step=0.001)
     z_spec = xcat["ZSPEC"]
+
     # jackknife
     if jk["num"] != 0:
         idx = np.random.choice(np.arange(len(xcat)),
                                size=int(np.around(len(xcat)*(1-jk["thin"]))),
                                replace=jk["replace"])
         z_spec, weights = z_spec[idx], weights[idx]
-    Nz, z_mid = nz_from_weights(z_spec, weights, bins=bins)
+
+    Nz, _ = np.histogram(z_spec, bins=bins, density=True, weights=weights)
+
     # output handling
+    z_mid = 0.5*(bins[:-1] + bins[1:])
     if save is not None:
-        if save[-1] != "/": save += "_"
-        if jk["num"] != 0: save += "jk%s" % jk[""]
+        if jk["num"] != 0: save += "_jk%s" % jk[""]
         np.savez(save, z_arr=z_mid, nz_arr=Nz)
     if full_output:
         return Nz, z_mid
