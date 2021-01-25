@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+from sympy import divisors
 from scipy.spatial import cKDTree
 from sklearn.neighbors import NearestNeighbors
 from scipy.interpolate import interp1d
@@ -147,3 +148,42 @@ def width_func(z, Nz, width=1, z_avg=None, normed=True):
     if normed:
         Nz_w /= simps(Nz_w, x=z)
     return Nz_w
+
+
+def nearest_divisor(num, total, mode="nearest"):
+    """
+    Finds number nearest to ``num`` which is a divisor of ``total``.
+    (e.g.) ``nearest_divisor(3, 10) == 2``
+    (e.g.) ``nearest_divisor(4, 15) == 5``
+    (e.g.) ``nearest_divisor(2, 9) == 1``
+    (e.g.) ``nearest_divisor(2, 9, "higher") == 3``
+
+    Parameters
+    ----------
+    num : int
+        Target number.
+    total : int
+        Length of array to be split into equally sized parts.
+    mode : str
+        How the number will move:
+            "nearest" : get the nearest divisor
+            "high" : get the first divisor larger than ``num``
+            "low" : get the first divisor smaller than ``num``
+
+    Returns
+    -------
+    int
+        Divisor of ``total`` nearest to ``num``.
+    """
+    if total % num == 0:  # number is already a divisor
+        return num
+    div = np.array(divisors(total))
+    if mode == "nearest":
+        idx = np.abs(div-num).argmin()
+    elif mode == "high":
+        idx = np.where((div-num) > 0)[0][0]
+    elif mode == "low":
+        idx = np.where((div-num) < 0)[0][-1]
+    else:
+        raise ValueError("mode not recognised")
+    return div[idx]
