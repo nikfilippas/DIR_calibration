@@ -2,10 +2,9 @@ from tqdm import tqdm
 import healpy as hp
 from healpy.rotator import Rotator
 import numpy as np
-from sympy import divisors
 from astropy.io import fits
 from scipy.optimize import curve_fit
-from DIR import DIR_weights, nz_from_weights, width_func
+from DIR import DIR_weights, nz_from_weights, width_func, nearest_divisor
 
 ## Preamble :: Sample Selection
 # global parameters
@@ -43,11 +42,9 @@ Nz, z_mid = nz_from_weights(xcat, weights, bins=bins,
 # weights to each jackknife. We overcome this by finding the divisor
 # of the size of the catalogue, which is closest to ``jk["num"]``.
 
-N_jk = 100  # approximate number of JKs
-div = np.array(divisors(len(xcat)))
-N_jk = div[np.abs(div-N_jk).argmin()]  # effective number of JKs
-jk_size = len(xcat)/N_jk
-print("Jackknife size:\t%d" % jk_size)
+N_jk = 100
+N_jk = nearest_divisor(N_jk, len(xcat))  # effective number of JKs
+print("Jackknife size:\t%d" % (len(xcat)/N_jk))
 print("# of jackknives:\t×%d" % N_jk)
 print("Catalogue size:\t=%d" % len(xcat))
 # shuffle indices
@@ -66,11 +63,11 @@ for i in range(N_jk):
 # Nz_jk = [np.load(prefix+"_jk%s.npz"%i)["nz_arr"] for i in range(N_jk)]
 
 # width
-w, dw = [], []
+w = []
 z_avg = np.average(z_mid, weights=Nz)
 fitfunc = lambda Nz, width: width_func(z_mid, Nz, width, z_avg)
 for N in tqdm(Nz_jk):
     popt, pcov = curve_fit(fitfunc, N, Nz, p0=[1.], bounds=(0.8, 1.2))
     w.append(popt[0])
-    dw.append(np.sqrt(pcov.squeeze()))
-w, dw = np.array(w), np.array(dw)
+
+dw = N_jk/(N_jk-1) * np.sum((w - np.mean(w))**2)  # 0.05332289703791278
