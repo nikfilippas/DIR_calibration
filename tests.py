@@ -43,13 +43,13 @@ while True:
     try:
         f = np.load("out/DIR_jk%s.npz" % jk_id)
         nz, z_jk = f["nz_arr"], f["z_arr"]
-        ax.plot(z_jk, nz, "gray", alpha=0.05)
+        ax.plot(z_jk, nz, "gray", alpha=0.07)
         jk_id += 1
     except FileNotFoundError:
         break
 
 # catalogues
-bins = np.arange(0, 0.2, 0.001)  # redshift bin edges
+bins = np.arange(0, 0.2, 0.005)  # redshift bin edges
 pz_spec, _ = np.histogram(xcat["ZSPEC"], bins=bins, density=True)
 pz_phot, _ = np.histogram(xcat["ZPHOTO"], bins=bins, density=True)
 z_mid = 0.5*(bins[:-1] + bins[1:])
@@ -81,3 +81,41 @@ hp.projscatter(ra[::thin], dec[::thin], coord="C", lonlat=True,
                color=colors, s=3)
 hp.graticule(coord="C", color="y", ls=":")
 plt.savefig("2MPZ_zspec_positions.pdf", bbox_inches="tight")
+
+
+# z_phot VS z_spec
+from matplotlib.cm import inferno
+rng = [z_phot.min(), z_phot.max()]
+
+fig, ax = plt.subplots()
+ax.set_xlabel(r"$ z_{\rm{phot}} $", fontsize=14)
+ax.set_ylabel(r"$ z_{\rm{spec}} $", fontsize=14)
+fig.tight_layout()
+Z, X, Y, mg = ax.hist2d(z_phot, z_spec, bins=40, range=[rng, rng], cmap=inferno)
+X = 0.5*(X[:-1] + X[1:])
+Y = 0.5*(Y[:-1] + Y[1:])
+ax.contour(X, Y, Z, levels=[68, 95], colors="white", alpha=0.7)
+ax.plot(np.arange(2), c="darkred", ls="--", lw=1)
+cb = fig.colorbar(mg, ax=ax)
+cb.set_label("number of galaxies", fontsize=14)
+
+
+#####
+nbins = 40
+fig, ax = plt.subplots(figsize=(9, 7))
+ax.set_xlabel(r"$ z_{\rm{phot}} $", fontsize=14)
+ax.set_ylabel(r"$ z_{\rm{spec}} $", fontsize=14)
+ax.set_xlim(rng[0], rng[1])
+ax.set_ylim(rng[0], rng[1])
+
+Z, X, Y, mg = ax.hist2d(z_phot, z_spec, bins=40, range=[rng, rng], cmap=inferno)
+X = 0.5*(X[:-1] + X[1:])
+Y = 0.5*(Y[:-1] + Y[1:])
+ax.hexbin(z_phot, z_spec, gridsize=nbins, extent=rng*2, cmap=inferno)
+ax.plot(np.arange(2), c="darkred", ls="--", lw=1)
+ax.contour(X, Y, Z, levels=[68], colors="white", alpha=0.7)
+cb = fig.colorbar(mg, ax=ax)
+cb.set_label("number of galaxies", fontsize=14)
+ax.set_aspect(1)
+fig.tight_layout()
+fig.savefig("z_phot_z_spec_comparison.pdf", bbox_inches="tight")
