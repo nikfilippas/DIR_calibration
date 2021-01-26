@@ -1,10 +1,75 @@
 import warnings
+import healpy as hp
+from healpy.rotator import Rotator
+import pandas as pd
 import numpy as np
-from sympy import divisors
+from astropy.io import fits
 from scipy.spatial import cKDTree
 from sklearn.neighbors import NearestNeighbors
-from scipy.interpolate import interp1d
-from scipy.integrate import simps
+
+
+class DIR_cross_match(object):
+    """
+    Perform cross-matching operations on a catalogue.
+
+    Arguments
+    ---------
+        fname_data : ``str``
+            Path to data.
+    """
+    def __init__(self, fname_data):
+        hp.disable_warnings()
+        if fname_data.split(".")[-1] == "fits":
+            self.cat = fits.open(fname_data)[1].data
+        if fname_data.split(".")[-1] == "csv":
+            self.cat = pd.read_csv(fname_data)
+        self.cat_fid = self.cat
+
+    def remove_galplane(self, fname_mask, ra_name, dec_name):
+        """
+        Given a galactic plane mask, remove the galactic plane.
+
+        Arguments
+        ---------
+            fname_mask : ``str``
+                Path to galactic plane mask.
+            ra_name : ``str``
+                Name of column containing RA.
+            dec_name : ``str``
+                Name of column containing Dec.
+        """
+        self.mask = hp.read_map(fname_mask, dtype=float)
+        self.mask = Rotator(coord=["G", "C"]).rotate_map_alms(self.mask,
+                                                    use_pixel_weights=False)
+        self.nside = hp.npix2nside(self.mask.size)
+        ipix = hp.ang2pix(self.nside,
+                          self.cat[ra_name],
+                          self.cat[dec_name],
+                          lonlat=True)
+        self.cat = self.cat[self.mask[ipix] > 0.5]
+        self.cat_fid = self.cat
+
+    def cutoff(self, col, vals):
+        """
+        Create a subsample of the main catalogue.
+
+        Arguments
+        ---------
+            col : ``str``
+                Column name according to which the subsample is created.
+            vals : ``float`` or array_like
+                If a single value is passed, it cuts off elements with that
+                value. If two values are passed, it treats them as boundaries.
+        """
+        vals = np.atleast_1d(vals)
+        if len(vals) == 1:
+            self.cat_fid = self.cat_fid[np.where(self.cat_fid[col] != vals[0])[0]]
+        elif len(vals) == 2:
+            self.cat_fid = self.cat_fid[(self.cat_fid[col] >= vals[0]) &
+                                        (self.cat_fid[col] <= vals[1])]
+        else:
+            raise ValueError("Vals should contain 1 or 2 cutoff values.")
+
 
 
 def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None):
@@ -108,82 +173,3 @@ def nz_from_weights(xcat, weights, indices=None, bins="auto",
         np.savez(save, z_arr=z_mid, nz_arr=Nz)
     if full_output:
         return Nz, z_mid
-
-
-def width_func(z, Nz, width=1, z_avg=None, normed=True):
-    """
-    Stretch the redshift distribution using the width parameter.
-
-    .. math::
-        p(z) \\propto p_{\\rm{fid}}\\left( \\langle z \\rangle +
-                                \\frac{z - \\langle z \\rangle}{w} \\right),
-
-    where :math:`p_{\\rm{fid}}` is the input distribution,
-    :math:`\\langle z \\rangle` is the mean redshift (or anchor point), and
-    :math:`w` is the width parameter.
-
-    Arguments
-    ---------
-        z : ``numpy.ndarray``
-            Sampled redshifts of the redshift distribution.
-        Nz : ``numpy.ndarray``
-            Redshift probability density.
-        width : float
-            Factor to stretch the distribution by.
-        z_avg : float
-            Custom redshift anchor point to stretch the distribution.
-            Default: ``None``; use the distribution mean value.
-        normed : bool
-            Re-normalise the modified redhisft distribution.
-
-    Returns
-    -------
-        Nz_w : ``numpy.ndarray``
-            Modified redshift distribution.
-    """
-    nzf = interp1d(z, Nz, kind="cubic", bounds_error=False, fill_value=0)
-    if z_avg is None:
-        z_avg = np.average(z, weights=Nz)
-    Nz_w = nzf(z_avg + (z-z_avg)/width)
-    if normed:
-        Nz_w /= simps(Nz_w, x=z)
-    return Nz_w
-
-
-def nearest_divisor(num, total, mode="nearest"):
-    """
-    Finds number nearest to ``num`` which is a divisor of ``total``.
-    (e.g.) ``nearest_divisor(3, 10) == 2``
-    (e.g.) ``nearest_divisor(4, 15) == 5``
-    (e.g.) ``nearest_divisor(2, 9) == 1``
-    (e.g.) ``nearest_divisor(2, 9, "higher") == 3``
-
-    Parameters
-    ----------
-    num : int
-        Target number.
-    total : int
-        Length of array to be split into equally sized parts.
-    mode : str
-        How the number will move:
-            "nearest" : get the nearest divisor
-            "high" : get the first divisor larger than ``num``
-            "low" : get the first divisor smaller than ``num``
-
-    Returns
-    -------
-    int
-        Divisor of ``total`` nearest to ``num``.
-    """
-    if total % num == 0:  # number is already a divisor
-        return num
-    div = np.array(divisors(total))
-    if mode == "nearest":
-        idx = np.abs(div-num).argmin()
-    elif mode == "high":
-        idx = np.where((div-num) > 0)[0][0]
-    elif mode == "low":
-        idx = np.where((div-num) < 0)[0][-1]
-    else:
-        raise ValueError("mode not recognised")
-    return div[idx]
