@@ -1,35 +1,27 @@
 from tqdm import tqdm
-import healpy as hp
-from healpy.rotator import Rotator
 import numpy as np
-from astropy.io import fits
 from scipy.optimize import curve_fit
-from DIR import DIR_weights, nz_from_weights, width_func, nearest_divisor
+from DIR import DIR_cross_match, nz_from_weights
+from funcs import width_func, nearest_divisor
 
-## Preamble :: Sample Selection
-# global parameters
+# sample selection
 fname_data = "2MPZ_FULL_wspec_coma_complete.fits"
 fname_mask = "mask_v3.fits"
-colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
-          "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
-cat = fits.open(fname_data)[1].data  # size: 928352
-# z-cutoff at 0.1
-cat = cat[(cat["ZPHOTO"] >= 0.05) & (cat["ZPHOTO"] <= 0.1)]  # size: 460301
-# mask out galactic plane
-mask = hp.read_map(fname_mask, dtype=float)
-mask = Rotator(coord=["G", "C"]).rotate_map_alms(mask, use_pixel_weights=False)
-nside = hp.npix2nside(mask.size)
-ipix = hp.ang2pix(nside, cat["SUPRA"], cat["SUPDEC"], lonlat=True)
-cat = cat[mask[ipix] > 0.5]  # size: 360164
-# cross-match
-xcat = cat[np.where(cat["ZSPEC"] != -999.)[0]]  # size: 141552
-##
+q = DIR_cross_match(fname_data)  # size: 928352
+q.remove_galplane(fname_mask, "SUPRA", "SUPDEC")  # size: 716055
+q.cutoff("ZPHOTO", [0.05, 0.10])  # size: 360164
+q.cutoff("ZSPEC", -999)  # size: 141552
+xcat = q.cat_fid
 
 # spectroscopic sample weights
-weights, _ = DIR_weights(xcat, cat, colors, save="out/weights")
+colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
+          "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
+# from DIR import DIR_weights
+# weights, _ = DIR_weights(xcat, cat, colors, save="out/weights")  # expensive
+weights = np.load("out/weights.npz")["weights"]  # load weights
 
 # entire sample
-step = 0.01  # bin width
+step = 0.005  # bin width
 bins = np.arange(0, 1+step, step=step)
 prefix = "out/DIR"
 Nz, z_mid = nz_from_weights(xcat, weights, bins=bins,
@@ -47,15 +39,15 @@ N_jk = nearest_divisor(N_jk, len(xcat))  # effective number of JKs
 print("Jackknife size:\t%d" % (len(xcat)/N_jk))
 print("# of jackknives:\t×%d" % N_jk)
 print("Catalogue size:\t=%d" % len(xcat))
-# shuffle indices
 idx = np.arange(len(xcat))
-np.random.shuffle(idx)
+np.random.shuffle(idx)  # shuffle indices
 
 Nz_jk = []
 for i in range(N_jk):
     pre_jk = prefix + "_jk%s" % i
+    indices = np.delete(idx, idx[i::N_jk])
     res, _ = nz_from_weights(xcat, weights,
-                             indices=idx[i::N_jk], bins=bins,
+                             indices=indices, bins=bins,
                              save=pre_jk, full_output=True)
     Nz_jk.append(res)
 
@@ -70,4 +62,5 @@ for N in tqdm(Nz_jk):
     popt, pcov = curve_fit(fitfunc, N, Nz, p0=[1.], bounds=(0.8, 1.2))
     w.append(popt[0])
 
-dw = N_jk/(N_jk-1) * np.sum((w - np.mean(w))**2)  # 0.05332289703791278
+dw = np.sqrt(N_jk/(N_jk-1) * np.sum((w - np.mean(w))**2))  # 0.05332289703791278
+print("\n", dw)
