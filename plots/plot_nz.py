@@ -13,8 +13,8 @@ import numpy as np
 from DIR import DIR_cross_match
 
 # sample selection
-fname_data = "2MPZ_FULL_wspec_coma_complete.fits"
-fname_mask = "mask_v3.fits"
+fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
+fname_mask = "data/mask_v3.fits"
 q = DIR_cross_match(fname_data)  # size: 928352
 q.remove_galplane(fname_mask, "SUPRA", "SUPDEC")  # size: 716055
 q.cutoff("ZPHOTO", [0.05, 0.10])  # size: 360164
@@ -35,8 +35,8 @@ sub.set_xlabel("z", fontsize=16)
 fig.tight_layout()
 
 # compare to Maciek's N(z)
-m1 = np.loadtxt("/home/nick/Desktop/yxgxk/data/dndz/2MPZ_bin1.txt")
-m2 = np.loadtxt("/home/nick/Desktop/yxgxk/data/dndz/2MPZ_v2_bin1.txt")
+m1 = np.loadtxt("data/2MPZ_bin1.txt")
+m2 = np.loadtxt("data/2MPZ_v2_bin1.txt")
 ax.plot(*m1.T, ls="--", label="2mpz_v1")
 ax.plot(*m2.T, ls="-.", label="2mpz_v2")
 
