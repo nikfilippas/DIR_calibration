@@ -2,7 +2,7 @@ from tqdm import tqdm
 import numpy as np
 from scipy.optimize import curve_fit
 from DIR import DIR_cross_match, nz_from_weights
-from funcs import width_func, nearest_divisor
+from funcs import width_func, nearest_divisor, Likelihood
 
 # sample selection
 fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
@@ -21,11 +21,14 @@ colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
 weights = np.load("out/weights.npz")["weights"]  # load weights
 
 # entire sample
-step = 0.005  # bin width
-bins = np.arange(0, 1+step, step=step)
 prefix = "out/DIR"
-Nz, z_mid = nz_from_weights(xcat, weights, bins=bins,
-                            save=prefix, full_output=True)
+# step = 0.001  # bin width
+# bins = np.arange(0, 1+step, step=step)
+# Nz, z_mid = nz_from_weights(xcat, weights, bins=bins,
+#                             save=prefix, full_output=True)
+# load
+f = np.load("out/DIR.npz")
+z_mid, Nz = f["z_arr"], f["nz_arr"]
 
 ## jackknives ##
 
@@ -39,28 +42,24 @@ N_jk = nearest_divisor(N_jk, len(xcat))  # effective number of JKs
 print("Jackknife size:\t%d" % (len(xcat)/N_jk))
 print("# of jackknives:\t×%d" % N_jk)
 print("Catalogue size:\t=%d" % len(xcat))
-idx = np.arange(len(xcat))
-np.random.shuffle(idx)  # shuffle indices
+# idx = np.arange(len(xcat))
+# np.random.shuffle(idx)  # shuffle indices
 
-Nz_jk = []
-for i in range(N_jk):
-    pre_jk = prefix + "_jk%s" % i
-    indices = np.delete(idx, idx[i::N_jk])
-    res, _ = nz_from_weights(xcat, weights,
-                             indices=indices, bins=bins,
-                             save=pre_jk, full_output=True)
-    Nz_jk.append(res)
+# Nz_jk = []
+# diff_sq = 0  # (Nz - <Nz>)^2
+# for i in range(N_jk):
+#     pre_jk = prefix + "_jk%s" % i
+#     indices = np.delete(idx, idx[i::N_jk])
+#     res, _ = nz_from_weights(xcat, weights,
+#                               indices=indices, bins=bins,
+#                               save=pre_jk, full_output=True)
+#     Nz_jk.append(res)
+#     diff_sq += (res-Nz)**2
 
 # jackknives load
-# Nz_jk = [np.load(prefix+"_jk%s.npz"%i)["nz_arr"] for i in range(N_jk)]
+Nz_jk = [np.load(prefix+"_jk%s.npz"%i)["nz_arr"] for i in range(N_jk)]
+diff_sq = np.sum([(nz-Nz)**2 for nz in Nz_jk], axis=0)
+dNz = np.sqrt(N_jk/(N_jk-1) * diff_sq)
 
-# width
-w = []
-z_avg = np.average(z_mid, weights=Nz)
-fitfunc = lambda Nz, width: width_func(z_mid, Nz, width, z_avg)
-for N in tqdm(Nz_jk):
-    popt, pcov = curve_fit(fitfunc, N, Nz, p0=[1.], bounds=(0.8, 1.2))
-    w.append(popt[0])
-
-dw = np.sqrt(N_jk/(N_jk-1) * np.sum((w - np.mean(w))**2))  # 0.05332289703791278
-print("\n", dw)
+l = Likelihood(z_mid, Nz, dNz)
+w, dw = l.prob()

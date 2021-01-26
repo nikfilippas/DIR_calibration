@@ -1,9 +1,11 @@
 """
 Useful functions used in weighted direct calibration.
+Likelihood code in this script adapted from @damonge.
 """
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import simps
+from scipy.signal import savgol_filter
 from sympy import divisors
 
 
@@ -100,3 +102,59 @@ def nearest_divisor(num, total, mode="nearest"):
     else:
         raise ValueError("mode not recognised")
     return div[idx]
+
+
+class Likelihood(object):
+    """
+    Likelihood of the width parameter.
+
+    Smooth the N(z) data using a Savgol filter
+    and use the interpolated template to create and
+    minimise the likelihood probability.
+
+    Arguments
+    ---------
+        z : ``numpy.ndarray``
+            Redshift array.
+        Nz : ``numpy.ndarray``
+            DIR probability distribution function.
+        dNz : ``numpy.ndarray``
+            Error of N(z).
+    """
+    def __init__(self, z, Nz, dNz, window_size=21):
+        # create smooth distribution to serve as template
+        Nz_smooth = savgol_filter(Nz, window_size, 2)
+        self.Nzi = interp1d(z, Nz_smooth, kind="cubic",
+                            bounds_error=False, fill_value=0)
+
+        # cut to range of redshifts we actually care about
+        zz = np.linspace(z.min(), z.max(), 1000)
+        Nzz = self.Nzi(zz)
+        zrange = zz[np.where(Nzz > Nzz.max()/500)[0]].take([0, -1])
+        mask = (z >= zrange[0]) & (z <= zrange[1])
+        mask = (z < 0.25) & (z > 0.01)
+        self.z = z[mask]
+        self.Nz = Nz[mask]
+        self.dNz = dNz[mask]  # actual errors
+        # if the error is zero, make it very large
+        # (effectively removing those points from the chi^2)
+        self.err = self.dNz
+        self.err[self.err <= 0] = 1e16
+
+        self.Nz_smooth = Nz_smooth[mask]
+        self.z_mean = np.average(self.z, weights=self.Nz)
+
+    def chi2(self, w):
+        """Compute the chi square, given a width ``w``."""
+        Nzw = self.Nzi(self.z_mean + (self.z-self.z_mean)/w)
+        return np.sum(((self.Nz-Nzw)/self.err)**2)
+
+    def prob(self, prior=[0.98, 1.02]):
+        """Calculate the probability."""
+        ws = np.linspace(prior[0], prior[1], 1000)
+        wprob = np.exp(-0.5*np.array([self.chi2(w) for w in ws]))
+        wprob /= np.sum(wprob)
+
+        self.w_mean = np.sum(wprob * ws)
+        self.dw = np.sqrt(np.sum(wprob * (ws - self.w_mean)**2))
+        return self.w_mean, self.dw
