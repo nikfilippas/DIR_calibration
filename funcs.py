@@ -121,33 +121,63 @@ class Likelihood(object):
         dNz : ``numpy.ndarray``
             Error of N(z).
     """
-    def __init__(self, z, Nz, dNz, window_size=21):
-        # create smooth distribution to serve as template
-        Nz_smooth = savgol_filter(Nz, window_size, 2)
-        self.Nzi = interp1d(z, Nz_smooth, kind="cubic",
+    def __init__(self, z, Nz, dNz):
+        self.z = z
+        self.Nz = Nz
+        self.dNz = dNz
+        self.smooth()
+        self.Nzi = interp1d(self.z, self.Nz_smooth, kind="cubic",
                             bounds_error=False, fill_value=0)
-
-        # cut to range of redshifts we actually care about
-        zz = np.linspace(z.min(), z.max(), 1000)
-        Nzz = self.Nzi(zz)
-        zrange = zz[np.where(Nzz > Nzz.max()/500)[0]].take([0, -1])
-        mask = (z >= zrange[0]) & (z <= zrange[1])
-        mask = (z < 0.25) & (z > 0.01)
-        self.z = z[mask]
-        self.Nz = Nz[mask]
-        self.dNz = dNz[mask]  # actual errors
-        # if the error is zero, make it very large
-        # (effectively removing those points from the chi^2)
-        self.err = self.dNz
-        self.err[self.err <= 0] = 1e16
-
-        self.Nz_smooth = Nz_smooth[mask]
         self.z_mean = np.average(self.z, weights=self.Nz)
+
+    def smooth(self, vmin_ratio=100, pp=[10, 45, 55, 90]):
+        """
+        Smooth filtering with optimal window size.
+
+        Start from a window size of 5 and check if
+        function is monotonically increasing up to <z>
+        and then monotonically decreasing.
+
+        Arguments
+        ---------
+            vmin_ratio : ``float``
+                Mask out probability values less than ``vmin_ratio`` of the mode.
+            pp : ``list`` of ``float``
+                Don't use values outside the range ``[pp[0], pp[3]]`` and
+                inside the range ``pp[1], pp[2]`` to determine smoothness.
+        """
+        # cutoff uninteresting region of redshift distribution
+        cut = np.where(self.Nz >= self.Nz.max()/vmin_ratio)[0].take([0, -1])
+        self.z = self.z[cut[0] : cut[1]]
+        self.Nz = self.Nz[cut[0] : cut[1]]
+        self.dNz = self.dNz[cut[0] : cut[1]]
+        # lookup range to make sure we are not affected by
+        # boundary conditions, artifacts, or jitter due to filtering
+        q = np.percentile(self.z, pp)
+        idx1 = np.argwhere((self.z > q[0]) & (self.z < q[1])).flatten()
+        idx2 = np.argwhere((self.z > q[2]) & (self.z < q[3])).flatten()
+        self.window = 5
+        while True:
+            Nz_smooth = savgol_filter(self.Nz, self.window, polyorder=3)
+            diffs = np.split(np.diff(Nz_smooth), [Nz_smooth.argmax()])
+            # indices as per lookup range
+            # increasing and then decreasing
+            if (diffs[0][idx1] >= 0).all() and \
+               (diffs[1][idx2 - len(diffs[0])] <= 0).all():
+                self.Nz_smooth = Nz_smooth
+                break
+            else:
+                self.window += 2
+                continue
 
     def chi2(self, w):
         """Compute the chi square, given a width ``w``."""
+        # if the error is zero, make it very large
+        # (effectively removing those points from the chi^2)
+        err = self.dNz
+        err[err <= 0] = 1e16
         Nzw = self.Nzi(self.z_mean + (self.z-self.z_mean)/w)
-        return np.sum(((self.Nz-Nzw)/self.err)**2)
+        return np.sum(((self.Nz-Nzw)/err)**2)
 
     def prob(self, prior=[0.98, 1.02]):
         """Calculate the probability."""
