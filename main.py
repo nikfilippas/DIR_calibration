@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import numpy as np
 from scipy.optimize import curve_fit
-from DIR import DIR_cross_match, nz_from_weights
+from DIR import DIR_cross_match, DIR_weights, nz_from_weights
 from funcs import width_func, nearest_divisor, Likelihood
 
 # sample selection
@@ -14,9 +14,8 @@ q.cutoff("ZSPEC", -999)  # size: 141552
 xcat = q.cat_fid
 
 # spectroscopic sample weights
-colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
-          "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
-# from DIR import DIR_weights
+# colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
+#           "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
 # weights, _ = DIR_weights(xcat, cat, colors, save="out/weights")  # expensive
 weights = np.load("out/weights.npz")["weights"]  # load weights
 
@@ -63,3 +62,4 @@ dNz = np.sqrt(N_jk/(N_jk-1) * diff_sq)
 
 l = Likelihood(z_mid, Nz, dNz)
 w, dw = l.prob()
+print(f"w = {w} +- {dw}")
