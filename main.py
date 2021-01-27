@@ -2,7 +2,7 @@ from tqdm import tqdm
 import numpy as np
 from scipy.optimize import curve_fit
 from DIR import DIR_cross_match, DIR_weights, nz_from_weights
-from funcs import width_func, nearest_divisor, Likelihood
+from funcs import nearest_divisor, Likelihood
 
 # sample selection
 fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
