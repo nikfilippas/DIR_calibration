@@ -15,15 +15,15 @@ from DIR import DIR_cross_match
 # sample selection
 fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
 fname_mask = "data/mask_v3.fits"
-q = DIR_cross_match(fname_data)  # size: 928352
-q.remove_galplane(fname_mask, "SUPRA", "SUPDEC")  # size: 716055
-q.cutoff("ZPHOTO", [0.05, 0.10])  # size: 360164
-q.cutoff("ZSPEC", -999)  # size: 141552
+q = DIR_cross_match(fname_data)
+q.remove_galplane(fname_mask, "L", "B")
+q.cutoff("ZPHOTO", [-1.00, 0.10])
+q.cutoff("ZSPEC", -999)
 xcat = q.cat_fid
 
 # plot
 fig, (ax, sub) = plt.subplots(2, 1, sharex=True, figsize=(10, 8),
-                              gridspec_kw={"height_ratios": [3, 1]})
+                              gridspec_kw={"height_ratios": [4, 1]})
 ax.grid(ls=":")
 sub.grid(ls=":")
 ax.set_xlim(0.0, 0.2)
@@ -71,4 +71,4 @@ ax.errorbar(z_mid, Nz, yerr=err,
             fmt="green", lw=2, label="DIR")
 
 ax.legend(loc="upper right", fontsize=12)
-# fig.savefig("img/2mpz_comparison.pdf", bbox_inches="tight")
+fig.savefig("img/2mpz_comparison.pdf", bbox_inches="tight")
