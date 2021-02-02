@@ -25,7 +25,7 @@ class DIR_cross_match(object):
             self.cat = pd.read_csv(fname_data)
         self.cat_fid = self.cat
 
-    def remove_galplane(self, fname_mask, ra_name, dec_name):
+    def remove_galplane(self, fname_mask, lon_name, lat_name, mode="G"):
         """
         Given a galactic plane mask, remove the galactic plane.
 
@@ -33,18 +33,21 @@ class DIR_cross_match(object):
         ---------
             fname_mask : ``str``
                 Path to galactic plane mask.
-            ra_name : ``str``
-                Name of column containing RA.
-            dec_name : ``str``
-                Name of column containing Dec.
+            lon_name : ``str``
+                Name of column containing longitude coordinate.
+            lat_name : ``str``
+                Name of column containing latitude coordinate.
+            mode : ``str``
+                Base coordiname system to use {'G', 'C'}. Default: 'C'.
         """
         self.mask = hp.read_map(fname_mask, dtype=float)
-        self.mask = Rotator(coord=["G", "C"]).rotate_map_alms(self.mask,
+        if mode != "G":
+            self.mask = Rotator(coord=["G", mode]).rotate_map_alms(self.mask,
                                                     use_pixel_weights=False)
         self.nside = hp.npix2nside(self.mask.size)
         ipix = hp.ang2pix(self.nside,
-                          self.cat[ra_name],
-                          self.cat[dec_name],
+                          self.cat[lon_name],
+                          self.cat[lat_name],
                           lonlat=True)
         self.cat = self.cat[self.mask[ipix] > 0.5]
         self.cat_fid = self.cat
@@ -68,7 +71,7 @@ class DIR_cross_match(object):
             self.cat_fid = self.cat_fid[(self.cat_fid[col] >= vals[0]) &
                                         (self.cat_fid[col] <= vals[1])]
         else:
-            raise ValueError("Vals should contain 1 or 2 cutoff values.")
+            raise ValueError("Argument `vals` should contain 1 or 2 cutoff values.")
 
 
 
