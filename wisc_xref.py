@@ -4,8 +4,8 @@ Cross-reference the WIxSC photo-z's and spec-z's, and save them.
 import pandas as pd
 import numpy as np
 
-fname_data_phot = "data/wiseScosPhotoz160708.csv"
-fname_data_spec = "data/zSpec-comp-WIxSC.csv"
+fname_data_phot = "data/cats/wiseScosPhotoz160708.csv"
+fname_data_spec = "data/cats/zSpec-comp-WIxSC.csv"
 
 print("Loading photo-z & spec-z catalogues...")
 f_ph = pd.read_csv(fname_data_phot)

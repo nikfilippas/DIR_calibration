@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 from DIR import xref
 
 # sample selection
-fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
-fname_mask = "data/mask_v3.fits"
+fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
+fname_mask = "data/maps/mask_v3.fits"
 q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])

@@ -13,8 +13,8 @@ import numpy as np
 from DIR import xref
 
 # sample selection
-fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
-fname_mask = "data/mask_v3.fits"
+fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
+fname_mask = "data/maps/mask_v3.fits"
 q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])
@@ -35,8 +35,8 @@ sub.set_xlabel("z", fontsize=16)
 fig.tight_layout()
 
 # compare to Maciek's N(z)
-m1 = np.loadtxt("data/2MPZ_bin1.txt")
-m2 = np.loadtxt("data/2MPZ_v2_bin1.txt")
+m1 = np.loadtxt("data/dndz/2MPZ_bin1.txt")
+m2 = np.loadtxt("data/dndz/2MPZ_v2_bin1.txt")
 ax.plot(*m1.T, ls="--", label="2mpz_v1")
 ax.plot(*m2.T, ls="-.", label="2mpz_v2")
 

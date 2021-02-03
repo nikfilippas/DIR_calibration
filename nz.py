@@ -6,6 +6,7 @@ import numpy as np
 from DIR import xref, nz_from_weights
 
 # global
+fname_mask = "data/maps/mask_v3.fits"
 step = 0.001  # bin width
 bins = np.arange(0, 1+step, step=step)
 run_jk = True
@@ -15,8 +16,7 @@ if run_jk: Njk = 100
 ## 2MPZ ##
 # load
 print("2MPZ")
-fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
-fname_mask = "data/mask_v3.fits"
+fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
 q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])
@@ -47,9 +47,7 @@ if run_jk:
 
 
 ## WIxSC ##
-fname_data = "data/wiseScosPhotoz160708.csv"
-fname_mask = "data/mask_v3.fits"
-
+fname_data = "data/cats/wiseScosPhotoz160708.csv"
 for b in range(1, 6):
     print("WIxSC bin %d" % b)
     # load
