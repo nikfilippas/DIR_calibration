@@ -25,7 +25,8 @@ xcat = q.cat_fid
 
 # compute N(z)
 weights = np.load("out/weights_2mpz.npz")["weights"]
-nz_from_weights(xcat, weights, bins=bins, save="out/DIR_2mpz")
+nz_from_weights(xcat, weights, bins=bins, z_col="ZSPEC",
+                save="out/DIR_2mpz")
 
 # run JKs
 use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
@@ -37,8 +38,9 @@ for jk in range(Njk):
     indices = np.delete(idx, idx[jk::Njk])
     nz_from_weights(xcat[:use],
                     weights[:use],
-                    indices=indices,
                     bins=bins,
+                    z_col="ZSPEC",
+                    indices=indices,
                     save=pre_jk)
 
 
@@ -58,7 +60,8 @@ for b in range(1, 6):
 
     # compute N(z)
     weights = np.load("out/weights_wisc%d.npz" % b)["weights"]
-    nz_from_weights(xcat, weights, bins=bins, save="out/DIR_wisc%i" % b)
+    nz_from_weights(xcat, weights, bins=bins, z_col="Zspec",
+                    save="out/DIR_wisc%i" % b)
 
     # run JKs
     use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
@@ -70,6 +73,7 @@ for b in range(1, 6):
         indices = np.delete(idx, idx[jk::Njk])
         nz_from_weights(xcat[:use],
                         weights[:use],
-                        indices=indices,
                         bins=bins,
+                        z_col="Zspec",
+                        indices=indices,
                         save=pre_jk)
