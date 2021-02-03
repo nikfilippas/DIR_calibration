@@ -1,5 +1,6 @@
 """
-Calculate the width mean and std for every z-bin.
+* Calculate the width mean and std for every z-bin.
+* Plot the redshift distributions.
 
 Results
 -------
@@ -11,12 +12,17 @@ wisc4 : w = 0.9989281281612168 +/- 0.011157022627974507
 wisc5 : w = 0.9985619687842962 +/- 0.010799995134135933
 """
 import numpy as np
+import matplotlib.pyplot as plt
 from funcs import Likelihood
 
 # names of z-bins
 zbins = ["2mpz"] + ["wisc%d" % b for b in range(1, 6)]
 
-for zbin in zbins:
+fig, ax = plt.subplots(2, 3, figsize=(12, 8))
+ax = ax.flatten()
+fig.tight_layout()
+
+for a, zbin in zip(ax, zbins):
     # load N(z)
     f = np.load("out/DIR_%s.npz" % zbin)
     z_mid, Nz = f["z_arr"], f["nz_arr"]
@@ -37,3 +43,6 @@ for zbin in zbins:
     l = Likelihood(z_mid, Nz, dNz)
     w, dw = l.prob()
     print(f"{zbin} : w = {w} +/- {dw}")
+    a.errorbar(l.z, l.Nz, l.dNz, fmt="k.", label=zbin)
+    a.plot(l.z, l.Nz_smooth, "r-", lw=2)
+    a.legend(loc="upper right")
