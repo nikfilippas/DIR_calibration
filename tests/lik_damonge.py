@@ -1,5 +1,5 @@
 """
-Likelihood code adapted from @damonge.
+Likelihood code from @damonge.
 """
 import numpy as np
 from scipy.interpolate import interp1d

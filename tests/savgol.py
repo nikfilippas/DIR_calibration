@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 from funcs import Likelihood
 
 # load DIR
-f = np.load("out/DIR.npz")
+zbin = "2mpz"
+f = np.load("out/DIR_%s.npz" % zbin)
 z_mid, Nz = f["z_arr"], f["nz_arr"]
 
 # load JKs
@@ -17,7 +18,7 @@ diff_sq = 0
 jk_id = 0
 while True:
     try:
-        f = np.load("out/DIR_jk%s.npz" % jk_id)
+        f = np.load("out/DIR_%s_jk%s.npz" % (zbin, jk_id))
         nz, _ = f["nz_arr"], f["z_arr"]
         diff_sq += (nz-Nz)**2
         jk_id += 1
@@ -33,4 +34,4 @@ ax.set_ylabel("N(z)", fontsize=16)
 ax.grid(ls=":")
 ax.errorbar(l.z, l.Nz, fmt="k.")
 ax.plot(l.z, l.Nz_smooth, "r-", lw=3)
-fig.savefig("tests/savgol_filter.pdf", bbox_inches="tight")
+fig.savefig("tests/savgol_%s.pdf" % zbin, bbox_inches="tight")
