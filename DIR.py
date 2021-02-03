@@ -134,8 +134,8 @@ def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=
     return weights
 
 
-def nz_from_weights(xcat, weights, indices=None, bins="auto",
-                    save=None, full_output=False):
+def nz_from_weights(xcat, weights, bins="auto", z_col=None,
+                    indices=None, save=None, full_output=False):
     """
     Calculate redshift probability density function.
 
@@ -145,12 +145,14 @@ def nz_from_weights(xcat, weights, indices=None, bins="auto",
             Catalogue of the cross-matched calibration galaxies.
         weights : ``numpy.ndarray``
             Array containing the weights of the calibration galaxies.
-        indices : `array_like`
-            Indices of ``xcat`` and ``weights`` sub-sample.
-            Default: ``None``; use the entire sample.
         bins : `array_like`
             Redshift bins to sample probability distribution function.
             Default: ``auto`` for automatic creation of the bins.
+        z_col : ``str``
+            Name of column in `xcat` containing spectroscopic redshifts.
+        indices : `array_like`
+            Indices of ``xcat`` and ``weights`` sub-sample.
+            Default: ``None``; use the entire sample.
         save : str
             Save the probability density function in an `.npz` file.
         full_output : bool
@@ -170,7 +172,7 @@ def nz_from_weights(xcat, weights, indices=None, bins="auto",
         warnings.simplefilter("ignore")
         if bins == "auto":  # FutureWarning
             bins = np.arange(0, 1, step=0.001)
-    z_spec = xcat["ZSPEC"]
+    z_spec = xcat[z_col]
 
     # sub-sample according to indices
     if indices is not None:
