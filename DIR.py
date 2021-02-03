@@ -18,10 +18,12 @@ class DIR_cross_match(object):
             Path to data.
     """
     def __init__(self, fname_data):
-        hp.disable_warnings()
-        if fname_data.split(".")[-1] == "fits":
+        self.is_fits = (fname_data.split(".")[-1] == "fits")
+        self.is_csv = (fname_data.split(".")[-1] == "csv")
+        #hp.disable_warnings()
+        if self.is_fits:
             self.cat = fits.open(fname_data)[1].data
-        if fname_data.split(".")[-1] == "csv":
+        elif self.is_csv:
             self.cat = pd.read_csv(fname_data)
         self.cat_fid = self.cat
 
@@ -65,14 +67,15 @@ class DIR_cross_match(object):
                 value. If two values are passed, it treats them as boundaries.
         """
         vals = np.atleast_1d(vals)
+        # set up indexer if table is Pandas DataFrame
+        cat_fid = self.cat_fid.iloc if self.is_csv else self.cat_fid
         if len(vals) == 1:
-            self.cat_fid = self.cat_fid[np.where(self.cat_fid[col] != vals[0])[0]]
+            self.cat_fid = cat_fid[np.where(self.cat_fid[col] != vals[0])[0]]
         elif len(vals) == 2:
-            self.cat_fid = self.cat_fid[(self.cat_fid[col] >= vals[0]) &
-                                        (self.cat_fid[col] <= vals[1])]
+            self.cat_fid = cat_fid[(self.cat_fid[col] >= vals[0]) &
+                                   (self.cat_fid[col] <= vals[1])]
         else:
             raise ValueError("Argument `vals` should contain 1 or 2 cutoff values.")
-
 
 
 def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None):
