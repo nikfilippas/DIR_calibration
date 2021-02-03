@@ -78,7 +78,7 @@ class DIR_cross_match(object):
             raise ValueError("Argument `vals` should contain 1 or 2 cutoff values.")
 
 
-def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None):
+def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=False):
     """
     DIR calibration
 
@@ -93,13 +93,15 @@ def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None):
         cat : ``numpy.record``
             The full catalogue (photo-z sample).
             colour space hyper-rectangle.
-        N_nearest : int
+        N_nearest : ``int``
             Number of nearest neighbours to query.
-        tree_leaf : int
+        tree_leaf : ``int``
             Number of elements in a leaf before the trees use brute force.
-        save : str
+        save : ``str``
             Save the output in an `.npz` file using the specified filename.
             Default: ``None``, i.e. no save.
+        verbose : ``bool``
+            Increase verbosity in kd-tree build and query.
 
     Returns
     -------
@@ -109,23 +111,27 @@ def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None):
             Indices of the calibration galaxies in the catalogue.
     """
     photo_sample = np.column_stack([cat[col] for col in cols])
-    tree = cKDTree(photo_sample, leafsize=tree_leaf)
+    if verbose: print("Building tree...")
+    tree = cKDTree(photo_sample, leafsize=tree_leaf,
+                   balanced_tree=False)
     # set-up samples
     train_sample = np.column_stack([xcat[col] for col in cols])
     # neighbours and distances
+    if verbose: print("Finding neighbours...")
     NN = NearestNeighbors(n_neighbors=N_nearest, algorithm="kd_tree",
                           leaf_size=tree_leaf, metric="euclidean")
     distances, _ = NN.fit(train_sample).kneighbors(train_sample)
     distances = np.amax(distances, axis=1)
     # tree lookup
+    if verbose: print("Tree lookup...")
     num_photoz = np.array([len(tree.query_ball_point(t, d+1e-6))
                            for t, d in zip(train_sample, distances)])
     weights = len(train_sample)/len(photo_sample) * num_photoz/N_nearest
-    idx = xcat["TWOMASSID"]
     # output handling
     if save is not None:
-        np.savez(save, indices=idx, weights=weights)
-    return weights, idx
+        if verbose: print("Saving weights...")
+        np.savez(save, weights=weights)
+    return weights
 
 
 def nz_from_weights(xcat, weights, indices=None, bins="auto",
