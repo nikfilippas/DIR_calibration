@@ -8,7 +8,8 @@ from DIR import DIR_cross_match, nz_from_weights
 # global
 step = 0.001  # bin width
 bins = np.arange(0, 1+step, step=step)
-Njk = 100
+run_jk = True
+if run_jk: Njk = 100
 
 
 ## 2MPZ ##
@@ -29,19 +30,20 @@ nz_from_weights(xcat, weights, bins=bins, z_col="ZSPEC",
                 save="out/DIR_2mpz")
 
 # run JKs
-use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
-idx = np.arange(len(xcat[:use]))
-np.random.shuffle(idx)  # shuffle indices
+if run_jk:
+    use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
+    idx = np.arange(len(xcat[:use]))
+    np.random.shuffle(idx)  # shuffle indices
 
-for jk in range(Njk):
-    pre_jk = "out/DIR_2mpz_jk%s" % jk
-    indices = np.delete(idx, idx[jk::Njk])
-    nz_from_weights(xcat[:use],
-                    weights[:use],
-                    bins=bins,
-                    z_col="ZSPEC",
-                    indices=indices,
-                    save=pre_jk)
+    for jk in range(Njk):
+        pre_jk = "out/DIR_2mpz_jk%s" % jk
+        indices = np.delete(idx, idx[jk::Njk])
+        nz_from_weights(xcat[:use],
+                        weights[:use],
+                        bins=bins,
+                        z_col="ZSPEC",
+                        indices=indices,
+                        save=pre_jk)
 
 
 ## WIxSC ##
@@ -64,16 +66,17 @@ for b in range(1, 6):
                     save="out/DIR_wisc%i" % b)
 
     # run JKs
-    use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
-    idx = np.arange(len(xcat[:use]))
-    np.random.shuffle(idx)  # shuffle indices
+    if run_jk:
+        use = len(xcat)//Njk * Njk  # effective length of xcat for the JKs
+        idx = np.arange(len(xcat[:use]))
+        np.random.shuffle(idx)  # shuffle indices
 
-    for jk in range(Njk):
-        pre_jk = "out/DIR_wisc%d_jk%d" % (b, jk)
-        indices = np.delete(idx, idx[jk::Njk])
-        nz_from_weights(xcat[:use],
-                        weights[:use],
-                        bins=bins,
-                        z_col="Zspec",
-                        indices=indices,
-                        save=pre_jk)
+        for jk in range(Njk):
+            pre_jk = "out/DIR_wisc%d_jk%d" % (b, jk)
+            indices = np.delete(idx, idx[jk::Njk])
+            nz_from_weights(xcat[:use],
+                            weights[:use],
+                            bins=bins,
+                            z_col="Zspec",
+                            indices=indices,
+                            save=pre_jk)
