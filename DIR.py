@@ -8,7 +8,7 @@ from scipy.spatial import cKDTree
 from sklearn.neighbors import NearestNeighbors
 
 
-class DIR_cross_match(object):
+class xref(object):
     """
     Perform cross-matching operations on a catalogue.
 
@@ -78,7 +78,7 @@ class DIR_cross_match(object):
             raise ValueError("Argument `vals` should contain 1 or 2 cutoff values.")
 
 
-def DIR_weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=False):
+def weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=False):
     """
     DIR calibration
 

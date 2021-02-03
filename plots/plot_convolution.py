@@ -8,13 +8,13 @@ os.chdir("..")
 import numpy as np
 from scipy.integrate import simps
 import matplotlib.pyplot as plt
-from DIR import DIR_cross_match
+from DIR import xref
 from funcs import Likelihood
 
 # sample selection
 fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
 fname_mask = "data/mask_v3.fits"
-q = DIR_cross_match(fname_data)
+q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])
 q.cutoff("ZSPEC", -999)

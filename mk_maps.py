@@ -3,7 +3,7 @@ Create maps from N(z) catalogues.
 """
 import healpy as hp
 import numpy as np
-from DIR import DIR_cross_match
+from DIR import xref
 
 # global
 nside = 512
@@ -14,7 +14,7 @@ mask = hp.ud_grade(hp.read_map(fname_mask), nside)
 ## 2MPZ ##
 print("2MPZ")
 fname_data = "data/maps/2MPZ_FULL_wspec_coma_complete.fits"
-q = DIR_cross_match(fname_data)
+q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])
 q.cutoff("ZSPEC", -999)
@@ -34,7 +34,7 @@ fname_data = "data/maps/wiseScosPhotoz160708.csv"
 for i, zbin in enumerate(zbins):
     print("WIxSC bin %d" % i)
     fname = fname_data.split(".")[0] + "_bin%d.csv" % i
-    q = DIR_cross_match(fname)
+    q = xref(fname)
     q.remove_galplane(fname_mask, "l", "b")
     cat = q.cat_fid
     q.cutoff("Zspec", -999)
@@ -45,4 +45,4 @@ for i, zbin in enumerate(zbins):
     ngal = np.bincount(ipix, minlength=npix)
     n_mean = np.sum(ngal*mask) / np.sum(mask)
     delta = mask*(ngal/n_mean - 1)
-    hp.write_map("data/map_%s.fits" % zbin, delta, overwrite=True)
+    hp.write_map("data/maps/map_%s.fits" % zbin, delta, overwrite=True)

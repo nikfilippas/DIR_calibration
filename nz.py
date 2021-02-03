@@ -3,7 +3,7 @@ Compute and save the N(z) of the 2MPZ and WIxSC bins.
 (Optional): Run jackknives to estimate the N(z) error.
 """
 import numpy as np
-from DIR import DIR_cross_match, nz_from_weights
+from DIR import xref, nz_from_weights
 
 # global
 step = 0.001  # bin width
@@ -17,7 +17,7 @@ if run_jk: Njk = 100
 print("2MPZ")
 fname_data = "data/2MPZ_FULL_wspec_coma_complete.fits"
 fname_mask = "data/mask_v3.fits"
-q = DIR_cross_match(fname_data)
+q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
 q.cutoff("ZPHOTO", [-1.00, 0.10])
 cat = q.cat_fid
@@ -54,7 +54,7 @@ for b in range(1, 6):
     print("WIxSC bin %d" % b)
     # load
     fname = fname_data.split(".")[0] + "_bin%d.csv" % b
-    q = DIR_cross_match(fname)
+    q = xref(fname)
     q.remove_galplane(fname_mask, "l", "b")
     cat = q.cat_fid
     q.cutoff("Zspec", -999)
