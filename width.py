@@ -46,3 +46,6 @@ for a, zbin in zip(ax, zbins):
     a.errorbar(l.z, l.Nz, l.dNz, fmt="k.", label=zbin)
     a.plot(l.z, l.Nz_smooth, "r-", lw=2)
     a.legend(loc="upper right")
+
+plt.show()
+
