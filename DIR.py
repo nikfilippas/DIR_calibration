@@ -93,6 +93,8 @@ def weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=Fals
         cat : ``numpy.record``
             The full catalogue (photo-z sample).
             colour space hyper-rectangle.
+        cols : ``list`` of ``str``
+            The colours defining the multi-dimensional axes.
         N_nearest : ``int``
             Number of nearest neighbours to query.
         tree_leaf : ``int``
@@ -107,8 +109,6 @@ def weights(xcat, cat, cols, N_nearest=20, tree_leaf=30, save=None, verbose=Fals
     -------
         weights : ``numpy.ndarray``
             Weights of the calibration galaxies in the catalogue.
-        idx : ``numpy.ndarray``
-            Indices of the calibration galaxies in the catalogue.
     """
     photo_sample = np.column_stack([cat[col] for col in cols])
     if verbose: print("Building tree...")
@@ -173,6 +173,7 @@ def nz_from_weights(xcat, weights, bins="auto", z_col=None,
         if bins == "auto":  # FutureWarning
             bins = np.arange(0, 1, step=0.001)
     z_spec = xcat[z_col]
+    if isinstance(z_spec, pd.core.series.Series): z_spec = z_spec.values
 
     # sub-sample according to indices
     if indices is not None:
