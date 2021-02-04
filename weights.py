@@ -38,5 +38,5 @@ for i in range(1, 6):
     xcat = q.cat_fid  # spec-z sample
     # spectroscopic sample weights
     print("Finding weights...")
-    weights = xref(xcat, cat, colors, verbose=True,
-                   save="out/weights_wisc%d" % i)
+    weights = weights(xcat, cat, colors, verbose=True,
+                      save="out/weights_wisc%d" % i)
