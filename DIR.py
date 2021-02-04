@@ -173,6 +173,7 @@ def nz_from_weights(xcat, weights, bins="auto", z_col=None,
         if bins == "auto":  # FutureWarning
             bins = np.arange(0, 1, step=0.001)
     z_spec = xcat[z_col]
+    # same as ``xref.is_csv``
     if isinstance(z_spec, pd.core.series.Series): z_spec = z_spec.values
 
     # sub-sample according to indices
