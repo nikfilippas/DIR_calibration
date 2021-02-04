@@ -4,25 +4,20 @@
 
 Results
 -------
-2mpz : w = 1.0005244841876295 +/- 0.00046476413050352693
-wisc1 : w = 0.9988705810345839 +/- 0.010429321829146921
-wisc2 : w = 0.9997152056910912 +/- 0.011159028865620063
-wisc3 : w = 0.9994581222032399 +/- 0.01142192739230215
-wisc4 : w = 0.9989281281612168 +/- 0.011157022627974507
-wisc5 : w = 0.9985619687842962 +/- 0.010799995134135933
+2mpz :  w = 1.0006932628036858 +/- 0.0005790971268628165
+wisc1 : w = 1.0005493937785184 +/- 0.0004833475255687241
+wisc2 : w = 1.0007753932979970 +/- 0.0006381720859299973
+wisc3 : w = 1.0007639012371237 +/- 0.0007071641836272273
+wisc4 : w = 1.0002472701429062 +/- 0.0002300252207527303
+wisc5 : w = 1.0007892595210480 +/- 0.0006970804970449077
 """
 import numpy as np
-import matplotlib.pyplot as plt
 from funcs import Likelihood
 
 # names of z-bins
 zbins = ["2mpz"] + ["wisc%d" % b for b in range(1, 6)]
 
-fig, ax = plt.subplots(2, 3, figsize=(12, 8))
-ax = ax.flatten()
-fig.tight_layout()
-
-for a, zbin in zip(ax, zbins):
+for zbin in zbins:
     # load N(z)
     f = np.load("out/DIR_%s.npz" % zbin)
     z_mid, Nz = f["z_arr"], f["nz_arr"]
@@ -43,9 +38,3 @@ for a, zbin in zip(ax, zbins):
     l = Likelihood(z_mid, Nz, dNz)
     w, dw = l.prob()
     print(f"{zbin} : w = {w} +/- {dw}")
-    a.errorbar(l.z, l.Nz, l.dNz, fmt="k.", label=zbin)
-    a.plot(l.z, l.Nz_smooth, "r-", lw=2)
-    a.legend(loc="upper right")
-
-plt.show()
-
