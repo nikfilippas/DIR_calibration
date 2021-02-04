@@ -30,12 +30,12 @@ class Likelihood(object):
         self.z = z
         self.Nz = Nz
         self.dNz = dNz
-        self.smooth()
+        self.smooth(zrange=[0.002, np.inf])
         self.Nzi = interp1d(self.z, self.Nz_smooth, kind="cubic",
                             bounds_error=False, fill_value=0)
         self.z_mean = np.average(self.z, weights=self.Nz)
 
-    def smooth(self, vmin_ratio=100, bc_cut=5, jit_cut=10):
+    def smooth(self, vmin_ratio=100, bc_cut=5, jit_cut=10, zrange=None):
         """
         Smooth filtering with optimal window size.
 
@@ -54,13 +54,22 @@ class Likelihood(object):
                 Lookup values in the N(z) above (100-`jit_cut`) percent of the
                 max value are excluded to avoid infinite loops to determine
                 smoothing window size.
+            zrange : ``list`` or ``tuple``
+                Absolute z-range cutoff (e.g. to avoid lone z-points).
         """
+        # absolute z-range cutoff
+        if zrange is not None:
+            idx = np.where((self.z >= zrange[0]) & (self.z <= zrange[1]))[0]
+            self.z = self.z[idx]
+            self.Nz = self.Nz[idx]
+            if self.dNz is not None:
+                self.dNz = self.dNz[idx]
         # cutoff uninteresting region of redshift distribution
-        cut = np.where(self.Nz >= self.Nz.max()/vmin_ratio)[0]
-        self.z = self.z[cut]
-        self.Nz = self.Nz[cut]
+        cut = np.where(self.Nz >= self.Nz.max()/vmin_ratio)[0].take([0, -1])
+        self.z = self.z[cut[0] : cut[1]+1]
+        self.Nz = self.Nz[cut[0] : cut[1]+1]
         if self.dNz is not None:
-            self.dNz = self.dNz[cut]
+            self.dNz = self.dNz[cut[0] : cut[1]+1]
         # lookup range to make sure we are not affected by
         # boundary conditions, artifacts, or jitter due to filtering
         q = np.percentile(self.z, [bc_cut/2, 100-bc_cut/2])
