@@ -40,7 +40,7 @@ m2 = np.loadtxt("data/dndz/2MPZ_v2_bin1.txt")
 ax.plot(*m1.T, ls="--", label="2mpz_v1")
 ax.plot(*m2.T, ls="-.", label="2mpz_v2")
 
-f = np.load("out/DIR.npz")
+f = np.load("out/DIR_2mpz.npz")
 z_mid, Nz = f["z_arr"], f["nz_arr"]
 
 # jackknives
@@ -48,7 +48,7 @@ diff_sq = 0
 jk_id = 0
 while True:
     try:
-        f = np.load("out/DIR_jk%s.npz" % jk_id)
+        f = np.load("out/DIR_2mpz_jk%s.npz" % jk_id)
         nz, z_jk = f["nz_arr"], f["z_arr"]
         # ax.plot(z_jk, nz, "gray", alpha=0.07)
         diff = nz-Nz
