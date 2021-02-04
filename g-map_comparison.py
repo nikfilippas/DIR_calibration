@@ -36,5 +36,3 @@ for i, (o, n) in enumerate(zip(old, new)):
     plt.legend(loc="upper right")
     plt.savefig("tests/anafast_%d.pdf" % i)
     plt.close("all")
-    if i == 0:
-        break
