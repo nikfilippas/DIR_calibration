@@ -29,6 +29,7 @@ mask = hp.read_map(mask_fname)
 nside = hp.npix2nside(mask.size)
 
 for i, (o, n) in enumerate(zip(old, new)):
+    print("z-bin %d" % i)
     map_o = hp.ud_grade(hp.read_map(o), nside)*mask
     gm = np.sum(map_o*mask) / np.sum(mask)
     map_o = (map_o/gm - 1)*mask
