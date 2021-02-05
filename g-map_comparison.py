@@ -5,7 +5,7 @@ import healpy as hp
 import numpy as np
 import matplotlib.pyplot as plt
 
-hp.disable_warnings()
+#hp.disable_warnings()
 
 mask_fname = "data/maps/mask_v3.fits"
 tmpz_old = "data/maps/2mpz_05_01_512.fits"
