@@ -25,10 +25,17 @@ wisc5_new = "data/maps/map_wisc5.fits"
 old = [tmpz_old, wisc1_old, wisc2_old, wisc3_old, wisc4_old, wisc5_old]
 new = [tmpz_new, wisc1_new, wisc2_new, wisc3_new, wisc4_new, wisc5_new]
 
+mask = hp.read_map(mask_fname)
+nside = hp.npix2nside(mask.size)
 
 for i, (o, n) in enumerate(zip(old, new)):
-    cl_old = hp.anafast(hp.read_map(o))
-    cl_new = hp.anafast(hp.read_map(n))
+    map_o = hp.ud_grade(hp.read_map(o), nside)*mask
+    gm = np.sum(map_o*mask) / np.sum(mask)
+    map_o = (map_o/gm - 1)*mask
+
+    map_n = hp.ud_grade(hp.read_map(n), nside)*mask
+    cl_old = hp.anafast(map_o)
+    cl_new = hp.anafast(map_n)
     l = np.arange(1, cl_old.size+1)
 
     plt.loglog(l, cl_old, "r.", label="old")
