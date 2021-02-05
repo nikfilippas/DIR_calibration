@@ -72,8 +72,8 @@ class xref(object):
         if len(vals) == 1:
             self.cat_fid = cat_fid[np.where(self.cat_fid[col] != vals[0])[0]]
         elif len(vals) == 2:
-            self.cat_fid = cat_fid[(self.cat_fid[col] >= vals[0]) &
-                                   (self.cat_fid[col] <= vals[1])]
+            self.cat_fid = cat_fid[np.where((self.cat_fid[col] >= vals[0]) &
+                                            (self.cat_fid[col] <= vals[1]))[0]]
         else:
             raise ValueError("Argument `vals` should contain 1 or 2 cutoff values.")
 
