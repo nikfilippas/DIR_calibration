@@ -19,8 +19,7 @@ cat = q.cat_fid  # photo-z sample
 q.cutoff("ZSPEC", -999)
 xcat = q.cat_fid  # spec-z sample
 # spectroscopic sample weights
-weights = weights(xcat, cat, colors, verbose=True,
-                  save="out/weights_2mpz")
+weights(xcat, cat, colors, verbose=True, save="out/weights_2mpz")
 
 
 ## WIxSC ##
@@ -38,5 +37,4 @@ for i in range(1, 6):
     xcat = q.cat_fid  # spec-z sample
     # spectroscopic sample weights
     print("Finding weights...")
-    weights = weights(xcat, cat, colors, verbose=True,
-                      save="out/weights_wisc%d" % i)
+    weights(xcat, cat, colors, verbose=True, save="out/weights_wisc%d" % i)
