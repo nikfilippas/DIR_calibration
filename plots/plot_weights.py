@@ -41,16 +41,12 @@ ax[0].hist(xcat.ZPHOTO, bins=bins, weights=weights, density=True,
            histtype="step", lw=2, label="photo-z training set + weights")
 ax[0].set_xlim(cat.ZPHOTO.min(), cat.ZPHOTO.max())
 
+
 ## WIxSC ##
-zranges = [(0.10, 0.15), (0.15, 0.20), (0.20, 0.25),
-           (0.25, 0.30), (0.30, 0.35)]
-
-
 for i in range(1, 6):
     fname_data = "data/cats/wiseScosPhotoz160708_bin%s.csv" % i
     q = xref(fname_data)
     q.remove_galplane(fname_mask, "l", "b")
-    q.cutoff("zPhoto_Corr", zranges[i-1])
     cat = q.cat_fid
     q.cutoff("Zspec", -999)
     xcat = q.cat_fid
