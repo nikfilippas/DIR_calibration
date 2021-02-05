@@ -51,11 +51,13 @@ for i in range(1, 6):
     q.cutoff("Zspec", -999)
     xcat = q.cat_fid
 
+    weights = np.load("out/weights_wisc%s.npz" % i)["weights"]
+
     ax[i].hist(cat.zPhoto_Corr, bins=bins, density=True,
                histtype="step", lw=2, label="photo-z")
     ax[i].hist(xcat.zPhoto_Corr, bins=bins, density=True,
                histtype="step", lw=2, label="photo-z of training set")
-    ax[i].hist(xcat.zPhoto_Corr, bins=bins, density=True,
+    ax[i].hist(xcat.zPhoto_Corr, bins=bins, weights=weights, density=True,
                histtype="step", lw=2, label="photo-z training set + weights")
     ax[i].set_xlim(cat.zPhoto_Corr.min(), cat.zPhoto_Corr.max())
 
