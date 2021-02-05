@@ -1,5 +1,6 @@
 """
-Plot the smoothed redshift distributions in a single plot.
+* Plot the smoothed redshift distributions in a single plot.
+* Compare with redshift distributions in 1909.09102.
 """
 import os
 os.chdir("..")
@@ -8,6 +9,18 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 from funcs import Likelihood
 
+## N(z)'s in 1909.09102 ##
+zm, Nzm = [], []
+f = np.loadtxt("data/dndz/2MPZ.txt").T
+zm.append(f[0])
+Nzm.append(f[1])
+for b in range(1, 6):
+    f = np.loadtxt("data/dndz/WISC_bin%s.txt" % b).T
+    zm.append(f[0])
+    Nzm.append(f[1])
+
+
+## DIR ##
 # names of z-bins
 zbins = ["2mpz"] + ["wisc%d" % b for b in range(1, 6)]
 
@@ -22,6 +35,10 @@ ax.set_ylabel("N(z)", fontsize=16)
 ax.set_xlabel("z", fontsize=16)
 ax.set_xlim(0.0, 0.5)
 fig.tight_layout()
+
+# N(z) in 1909.09102
+for col, zz, NN in zip(cols, zm, Nzm):
+    ax.plot(zz, NN, c=col, lw=2, ls="--")
 
 for col, zbin in zip(cols, zbins):
     # load N(z)

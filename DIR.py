@@ -40,7 +40,7 @@ class xref(object):
             lat_name : ``str``
                 Name of column containing latitude coordinate.
             mode : ``str``
-                Base coordiname system to use {'G', 'C'}. Default: 'C'.
+                Base coordiname system to use {'G', 'C'}. Default: 'G'.
         """
         self.mask = hp.read_map(fname_mask, dtype=float)
         if mode != "G":
