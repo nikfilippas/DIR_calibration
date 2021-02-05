@@ -37,9 +37,9 @@ ax[0].hist(cat.ZPHOTO, bins=bins, density=True,
            histtype="step", lw=2, label="photo-z")
 ax[0].hist(xcat.ZPHOTO, bins=bins, density=True,
            histtype="step", lw=2, label="photo-z of training set")
-ax[0].hist(xcat.ZPHOTO, bins=bins, weights=weights,
-           density=True, histtype="photo-z training set + weights")
-
+ax[0].hist(xcat.ZPHOTO, bins=bins, weights=weights, density=True,
+           histtype="step", lw=2, label="photo-z training set + weights")
+ax[0].set_xlim(cat.ZPHOTO.min(), cat.ZPHOTO.max())
 
 ## WIxSC ##
 zranges = [(0.10, 0.15), (0.15, 0.20), (0.20, 0.25),
@@ -61,5 +61,7 @@ for i in range(1, 6):
                histtype="step", lw=2, label="photo-z of training set")
     ax[i].hist(xcat.zPhoto_Corr, bins=bins, density=True,
                histtype="step", lw=2, label="photo-z training set + weights")
+    ax[i].set_xlim(cat.zPhoto_Corr.min(), cat.zPhoto_Corr.max())
 
+[a.legend(loc="upper left") for a in ax[:1]]
 fig.savefig("img/weights.pdf", bbox_inches="tight")
