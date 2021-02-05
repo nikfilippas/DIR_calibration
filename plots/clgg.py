@@ -55,4 +55,4 @@ for i, (a, o, n) in enumerate(zip(ax, old, new)):
         a.legend(loc="upper right")
     a.legend(loc="upper right")
 
-fig.savefig("", bbox_inches="tight")
+fig.savefig("img/clgg.pdf", bbox_inches="tight")
