@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 from DIR import xref
 
 # global
-hp.disable_warnings()
 fname_mask = "data/maps/mask_v3.fits"
 step = 0.001  # bin width
 bins = np.arange(0, 1+step, step=step)
