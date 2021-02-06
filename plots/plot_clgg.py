@@ -2,6 +2,8 @@
 Compare clgg of the g-maps produced with new N(z)
 with the ones used in 1909.09102.
 """
+import sys
+sys.path.append("..")
 import os
 os.chdir("..")
 import healpy as hp

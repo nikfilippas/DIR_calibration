@@ -4,7 +4,7 @@ the training sample only. Weight the training sample
 to retrieve original N(z) of entire sample.
 """
 import os
-os.chdir("..")
+#os.chdir("..")
 import numpy as np
 import matplotlib.pyplot as plt
 from DIR import xref
