@@ -25,7 +25,7 @@ weights(xcat, cat, colors, verbose=True, save="out/weights_2mpz")
 
 ## WIxSC ##
 fname_data = "data/cats/wiseScosPhotoz160708.csv"
-colors = ["W1c", "W2c", "Bcc", "Rcc"]
+colors = ["w1mCorr", "w2mCorr", "bCalCorr", "rCalCorr"]
 
 for i in range(1, 6):
     print("WIxSC bin %d" % i)
