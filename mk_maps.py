@@ -52,6 +52,7 @@ if is_delta_g:
 hp.write_map("data/maps/map_%s.fits" % zbin, ngal, overwrite=True)
 
 # compare with no z-cut
+print("2MPZ no photo-z cut")
 cat = q.cat  # original cat without photo-z cuts
 ipix = hp.ang2pix(nside, cat["l"], cat["b"], lonlat=True)
 npix = hp.nside2npix(nside)
