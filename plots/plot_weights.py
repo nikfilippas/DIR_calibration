@@ -27,6 +27,7 @@ fig.tight_layout()
 
 
 ## 2MPZ ##
+print("2MPZ")
 fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
 q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
@@ -48,6 +49,7 @@ ax[0].set_xlim(cat.ZPHOTO.min(), cat.ZPHOTO.max())
 
 ## WIxSC ##
 for i in range(1, 6):
+    print("WIxSC bin %d" % i)
     fname_data = "data/cats/wiseScosPhotoz160708_bin%s.csv" % i
     q = xref(fname_data)
     q.remove_galplane(fname_mask, "l", "b")
