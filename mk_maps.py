@@ -8,7 +8,7 @@ from DIR import xref
 # global
 nside = 512
 fname_mask = "data/maps/mask_v3.fits"
-#hp.disable_warnings()
+hp.disable_warnings()
 mask = hp.ud_grade(hp.read_map(fname_mask), nside)
 is_delta_g = False
 

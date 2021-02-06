@@ -20,7 +20,7 @@ class xref(object):
     def __init__(self, fname_data):
         self.is_fits = (fname_data.split(".")[-1] == "fits")
         self.is_csv = (fname_data.split(".")[-1] == "csv")
-        #hp.disable_warnings()
+        hp.disable_warnings()
         if self.is_fits:
             self.cat = fits.open(fname_data)[1].data
         elif self.is_csv:

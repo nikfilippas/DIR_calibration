@@ -3,14 +3,19 @@ Plot raw N(z)'s for the entire photo-z sample and for
 the training sample only. Weight the training sample
 to retrieve original N(z) of entire sample.
 """
-import os
-#os.chdir("..")
+# move to parent dir
+import os, sys
+THIS_PATH = os.path.dirname(os.path.realpath(__file__))
+NEW_PATH = "/".join(THIS_PATH.split("/")[:-1])
+os.chdir(NEW_PATH)
+sys.path.append(NEW_PATH)
+#########################
 import numpy as np
 import matplotlib.pyplot as plt
 from DIR import xref
 
 # global
-#hp.disable_warnings()
+hp.disable_warnings()
 fname_mask = "data/maps/mask_v3.fits"
 step = 0.001  # bin width
 bins = np.arange(0, 1+step, step=step)

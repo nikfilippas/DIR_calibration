@@ -1,8 +1,13 @@
 """
 Contour plot of the photo-z to spec-z matching of the galaxies.
 """
-import os
-os.chdir("..")
+# move to parent dir
+import os, sys
+THIS_PATH = os.path.dirname(os.path.realpath(__file__))
+NEW_PATH = "/".join(THIS_PATH.split("/")[:-1])
+os.chdir(NEW_PATH)
+sys.path.append(NEW_PATH)
+#########################
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.cm import inferno

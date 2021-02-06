@@ -3,8 +3,13 @@ Show that the convolution of the photo-z sample with a
 Gaussian and a Lorentzian roughly reproduces the redshift
 distributions in 1805.11525.
 """
-import os
-os.chdir("..")
+# move to parent dir
+import os, sys
+THIS_PATH = os.path.dirname(os.path.realpath(__file__))
+NEW_PATH = "/".join(THIS_PATH.split("/")[:-1])
+os.chdir(NEW_PATH)
+sys.path.append(NEW_PATH)
+#########################
 import numpy as np
 from scipy.integrate import simps
 import matplotlib.pyplot as plt

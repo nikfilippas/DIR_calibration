@@ -6,8 +6,13 @@ Plot the following redshift distributions and the associated errors:
     - 2MPZ full spec-z
     - 2MPZ spec-z DIR
 """
-import os
-os.chdir("..")
+# move to parent dir
+import os, sys
+THIS_PATH = os.path.dirname(os.path.realpath(__file__))
+NEW_PATH = "/".join(THIS_PATH.split("/")[:-1])
+os.chdir(NEW_PATH)
+sys.path.append(NEW_PATH)
+#########################
 import matplotlib.pyplot as plt
 import numpy as np
 from DIR import xref

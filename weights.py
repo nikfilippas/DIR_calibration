@@ -11,6 +11,7 @@ fname_mask = "data/maps/mask_v3.fits"
 fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
 colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
           "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
+print("2MPZ")
 # sample selection
 q = xref(fname_data)
 q.remove_galplane(fname_mask, "L", "B")
@@ -36,5 +37,4 @@ for i in range(1, 6):
     q.cutoff("Zspec", -999)
     xcat = q.cat_fid  # spec-z sample
     # spectroscopic sample weights
-    print("Finding weights...")
     weights(xcat, cat, colors, verbose=True, save="out/weights_wisc%d" % i)
