@@ -46,6 +46,7 @@ for col, zz, NN in zip(cols, zm, Nzm):
     ax.plot(zz, NN, c=col, lw=2, ls="--")
 
 for col, zbin in zip(cols, zbins):
+    print(zbin)
     # load N(z)
     f = np.load("out/DIR_%s.npz" % zbin)
     z_mid, Nz = f["z_arr"], f["nz_arr"]
