@@ -42,7 +42,7 @@ for a, zbin in zip(ax, zbins):
     dNz = np.sqrt(Njk/(Njk-1) * diff_sq)
     l = Likelihood(z_mid, Nz, dNz)
     a.errorbar(l.z, l.Nz, l.dNz, fmt="k.", label=zbin)
-    a.plot(l.z, l.Nz_smooth, "r-", lw=2)
+    a.plot(l.z, l.Nz_smooth, "r-", lw=3)
     a.set_xlim(l.z[0], l.z[-1])
     a.legend(loc="upper right")
 
