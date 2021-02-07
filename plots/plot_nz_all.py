@@ -9,13 +9,15 @@ NEW_PATH = "/".join(THIS_PATH.split("/")[:-1])
 os.chdir(NEW_PATH)
 sys.path.append(NEW_PATH)
 #########################
+import healpy as hp
+hp.disable_warnings()
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
 # global
 z_arr = np.linspace(0, 1, 1000)
-normed = True  # normed or absolute N(z)'s
+normed = False  # normed or absolute N(z)'s
 # open every cat and store number of galaxies
 if not normed:
     print("Finding catalogue sizes...")
@@ -36,6 +38,9 @@ if not normed:
     #     q.remove_galplane(fname_mask, "l", "b")
     #     sizes.append(len(q.cat_fid))
     sizes = [476422, 3458260, 3851322, 4000017, 3412366, 1296810]
+    fsky = np.mean(hp.read_map("data/maps/mask_v3.fits"))
+    area = 4*np.pi*fsky*(180/np.pi)**2
+    
 
 
 ## N(z)'s in 1909.09102 ##
@@ -47,7 +52,7 @@ for b in range(1, 6):
     f = np.loadtxt("data/dndz/WISC_bin%s.txt" % b).T
     zm.append(f[0])
     Nzm.append(f[1])
-Nzm = [N*s/4125300 for N, s in zip(Nzm, sizes)] if not normed else Nzm
+Nzm = [N*s/area for N, s in zip(Nzm, sizes)] if not normed else Nzm
 
 ## DIR ##
 # names of z-bins
@@ -57,7 +62,7 @@ for zbin in zbins:
     f = np.loadtxt("data/dndz/%s_DIR.txt" % zbin).T
     zd.append(f[0])
     Nzd.append(f[1])
-Nzd = [N*s/4125300 for N, s in zip(Nzd, sizes)] if not normed else Nzd
+Nzd = [N*s/area for N, s in zip(Nzd, sizes)] if not normed else Nzd
 
 
 ## Plot ##
@@ -68,18 +73,21 @@ for i in range(1, 6):
     cols.append(cm_wisc(0.2 + 0.8*i/5))
 
 fig, ax = plt.subplots(figsize=(12, 6))
-ax.set_ylabel("N(z)", fontsize=16)
+if normed:
+    ax.set_ylabel("N(z)", fontsize=16)
+else:
+    ax.set_ylabel(r"$dN/dz\,d\Omega\,\,[10^2\,{\rm deg}^{-2}]$",fontsize=14)
 ax.set_xlabel("z", fontsize=16)
 ax.set_xlim(0.0, 0.5)
 fig.tight_layout()
 
 # N(z) in 1909.09102
 for col, zz, NN in zip(cols, zm, Nzm):
-    ax.plot(zz, NN, c=col, lw=2, ls="--")
+    ax.plot(zz, NN/100, c=col, lw=2, ls="--")
 
 # DIR-calibrated N(z)'s
 for zbin, col, zz, NN in zip(zbins, cols, zd, Nzd):
-    ax.plot(zz, NN, c=col, lw=2, label=zbin)
+    ax.plot(zz, NN/100, c=col, lw=2, label=zbin)
 
 ax.set_ylim(0,)
 ax.legend(loc="upper right", fontsize=14)
