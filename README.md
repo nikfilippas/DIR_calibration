@@ -15,16 +15,5 @@ This repository uses tools to perform weighted direct calibration (DIR) to the 2
 8. `DIR.py` contains the functions to perform DIR calibration.
 9. `funcs.py` contains other useful functions used in the pipeline.
 
-## Directory structure
-DIR_calibration/
-  data/  (data used in the pipeline - red.)
-    cats/
-    maps/
-    dndz/
-  img/ (plots)
-  plots/ (plotting scripts)
-  out/ (pipeline output - partially red.)
-  tests/ (various tests)
-
 ## Credit
 If you find this pipeline useful, please include a link to this repo in your work.
