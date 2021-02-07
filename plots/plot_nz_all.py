@@ -16,7 +16,7 @@ from funcs import Likelihood
 
 # global
 z_arr = np.linspace(0, 1, 1000)
-normed = True  # normed or absolute N(z)'s
+normed = False  # normed or absolute N(z)'s
 # open every cat and store number of galaxies
 if not normed:
     print("Finding catalogue sizes...")
@@ -96,4 +96,5 @@ for i, (col, zbin) in enumerate(zip(cols, zbins)):
 
 ax.set_ylim(0,)
 ax.legend(loc="upper right", fontsize=14)
-fig.savefig("img/nz_all.pdf", bbox_inches="tight")
+fig.savefig("img/nz_all_abs.pdf", bbox_inches="tight")
+
