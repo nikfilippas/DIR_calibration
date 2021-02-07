@@ -60,15 +60,17 @@ class Likelihood(object):
         # determine window size
         window = int(15*np.log10(self.z.size) // 2 * 2 + 1)
         self.Nz_smooth = savgol_filter(self.Nz, window, polyorder=3)
+        self.norm = simps(self.Nz_smooth, self.z)
 
     def chi2(self, w):
         """Compute the chi square, given a width ``w``."""
         # if the error is zero, make it very large
         # (effectively removing those points from the chi^2)
-        err = self.dNz
+        err = self.dNz.copy()
         err[err <= 0] = 1e16
         Nzw = self.Nzi(self.z_mean + (self.z-self.z_mean)/w)
-        return np.sum(((self.Nz-Nzw)/err)**2)
+        Nzw *= self.norm/simps(Nzw, self.z)
+        return np.sum(((self.Nz_smooth-Nzw)/err)**2)
 
     def prob(self, prior=[0.98, 1.02]):
         """Calculate the probability."""
