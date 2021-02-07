@@ -68,4 +68,4 @@ for i in range(1, 6):
     ax[i].set_xlim(cat.zPhoto_Corr.min(), cat.zPhoto_Corr.max())
 
 [a.legend(loc="upper left") for a in ax[:1]]
-# fig.savefig("img/weights.pdf", bbox_inches="tight")
+fig.savefig("img/weights.pdf", bbox_inches="tight")
