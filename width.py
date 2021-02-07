@@ -1,6 +1,5 @@
 """
-* Calculate the width mean and std for every z-bin.
-* Plot the redshift distributions.
+Calculate the width mean and std for every z-bin.
 
 Results
 -------
@@ -8,7 +7,7 @@ Results
 wisc1 : w = 1.0004753794174424 +/- 0.00035192981400517946
 wisc2 : w = 1.0003905203637462 +/- 0.00029281910671999460
 wisc3 : w = 1.0015899531635275 +/- 0.00145711261063026880
-wisc4 : w = 1.000642112260229 +/- 0.000489068417322734400
+wisc4 : w = 1.0006421122602290 +/- 0.00048906841732273440
 wisc5 : w = 1.0001195698677399 +/- 0.00106238073747336920
 """
 import numpy as np
