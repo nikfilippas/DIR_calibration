@@ -9,7 +9,12 @@ fname_data_spec = "data/cats/zSpec-comp-WIxSC.csv"
 
 print("Loading photo-z & spec-z catalogues...")
 f_ph = pd.read_csv(fname_data_phot)
+# saving memory
+get_rid = ["wiseX", "wiseID", "scosID", "cx", "cy", "cz", "htmID", "ebv", "zPhoto_ANN", "fromAllSky"]
+f_ph.drop(inplace=True, columns=get_rid)
 f_sp = pd.read_csv(fname_data_spec)
+get_rid = ["W1c", "W2c", "Bcc", "Rcc", "w1sigmpro", "w2sigmpro", "errB", "errR", "zCorr"]
+f_sp.drop(inplace=True, columns=get_rid)
 
 print("Cross-referencing catalogues...")
 f_x = pd.merge(f_ph, f_sp,
@@ -29,10 +34,10 @@ zbins = [(0.10, 0.15),
          (0.30, 0.35)]
 
 for i, zbin in enumerate(zbins):
+    print("  wisc%d" % (i+1))
     fname = fname_data_phot.split(".")[0] + "_bin%d.csv" % (i+1)
     z = f_x.zPhoto_Corr
-    idx = np.where((z > zbin[0]) & (z < zbin[1]))[0]
+    idx = np.where((z > zbin[0]) & (z <= zbin[1]))[0]
     f_x.iloc[idx].to_csv(fname)
-    print("  wisc%d" % (i+1))
 
 print("Output saved in %s/." % fname_data_phot.split("/")[0])
