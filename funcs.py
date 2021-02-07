@@ -5,6 +5,7 @@ Likelihood code in this script adapted from @damonge.
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.integrate import simps
+from scipy.optimize import root_scalar
 from scipy.signal import savgol_filter
 from sympy import divisors
 
@@ -30,12 +31,12 @@ class Likelihood(object):
         self.z = z
         self.Nz = Nz
         self.dNz = dNz
-        self.smooth(zrange=[0.002, np.inf])
+        self.smooth()
         self.Nzi = interp1d(self.z, self.Nz_smooth, kind="cubic",
                             bounds_error=False, fill_value=0)
         self.z_mean = np.average(self.z, weights=self.Nz)
 
-    def smooth(self, vmin_ratio=100, bc_cut=5, jit_cut=10, zrange=None):
+    def smooth(self, q_int=[0.1, 99.5]):
         """
         Smooth filtering with optimal window size.
 
@@ -45,52 +46,20 @@ class Likelihood(object):
 
         Arguments
         ---------
-            vmin_ratio : ``float``
-                Mask out probability values less than ``vmin_ratio`` of the mode.
-            bc_cut : ``float``
-                Percentage of z-range to mask out to avoid boundary conditions
-                when smoothing the redshift distribution.
-            jit_cut : ``float``
-                Lookup values in the N(z) above (100-`jit_cut`) percent of the
-                max value are excluded to avoid infinite loops to determine
-                smoothing window size.
-            zrange : ``list`` or ``tuple``
-                Absolute z-range cutoff (e.g. to avoid lone z-points).
+            q_int : Sequence of 2 floats
+                Mask off region outside percentiles of the distribution.
+                (Used when the distribution has very long tails.)
         """
-        # absolute z-range cutoff
-        if zrange is not None:
-            idx = np.where((self.z >= zrange[0]) & (self.z <= zrange[1]))[0]
-            self.z = self.z[idx]
-            self.Nz = self.Nz[idx]
-            if self.dNz is not None:
-                self.dNz = self.dNz[idx]
         # cutoff uninteresting region of redshift distribution
-        cut = np.where(self.Nz >= self.Nz.max()/vmin_ratio)[0].take([0, -1])
-        self.z = self.z[cut[0] : cut[1]+1]
-        self.Nz = self.Nz[cut[0] : cut[1]+1]
+        q = percentile(self.z, q_int, weights=self.Nz)
+        idx = np.where((self.z >= q[0]) & (self.z <= q[1]))[0]
+        self.z = self.z[idx]
+        self.Nz = self.Nz[idx]
         if self.dNz is not None:
-            self.dNz = self.dNz[cut[0] : cut[1]+1]
-        # lookup range to make sure we are not affected by
-        # boundary conditions, artifacts, or jitter due to filtering
-        q = np.percentile(self.z, [bc_cut/2, 100-bc_cut/2])
-        bc = np.where((self.z > q[0]) & (self.z < q[1]))[0]
-        jit = np.where(self.Nz > self.Nz.max()*(1-jit_cut/100))[0].take([0, -1])
-        idx1 = bc[bc < jit[0]]
-        # useful indices (increasing / decreasing)
-        idx2 = bc[bc > jit[1]]
-        self.window = 5
-        while True:
-            Nz_smooth = savgol_filter(self.Nz, self.window, polyorder=3)
-            diffs = np.diff(Nz_smooth)
-            # indices as per lookup range
-            # increasing and then decreasing
-            if (diffs[idx1] >= 0).all() and \
-               (diffs[idx2] <= 0).all():
-                self.Nz_smooth = Nz_smooth
-                break
-            else:
-                self.window += 2
-                continue
+            self.dNz = self.dNz[idx]
+        # determine window size
+        window = int(15*np.log10(self.z.size) // 2 * 2 + 1)
+        self.Nz_smooth = savgol_filter(self.Nz, window, polyorder=3)
 
     def chi2(self, w):
         """Compute the chi square, given a width ``w``."""
@@ -110,6 +79,22 @@ class Likelihood(object):
         self.w_mean = np.sum(wprob * ws)
         self.dw = np.sqrt(np.sum(wprob * (ws - self.w_mean)**2))
         return self.w_mean, self.dw
+
+
+def percentile(a, q, weights=None):
+    """Wrapper of ``numpy.percentile`` that handles weights."""
+    if weights is None:
+        return np.percentile(a, q)
+    q = np.atleast_1d(q)/100
+    sums = [simps(weights[:i], a[:i]) for i in range(1, len(a))]
+    sums = np.append([0], sums)
+    interp = [interp1d(a, sums-qi) for qi in q]
+    roots = [root_scalar(I, bracket=[a.min(), a.max()]).root for I in interp]
+    if len(q) == 1:
+        return roots[0]
+    else:
+        return np.array(roots)
+
 
 
 def width_func(z, Nz, width=1, z_avg=None, normed=True):
