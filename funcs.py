@@ -36,7 +36,7 @@ class Likelihood(object):
                             bounds_error=False, fill_value=0)
         self.z_mean = np.average(self.z, weights=self.Nz)
 
-    def smooth(self, q_int=[0.1, 99.5]):
+    def smooth(self, q_int=[0.1, 99]):
         """
         Smooth filtering with optimal window size.
 
