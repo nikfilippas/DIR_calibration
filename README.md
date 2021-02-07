@@ -10,7 +10,7 @@ This repository uses tools to perform weighted direct calibration (DIR) to the 2
 5. `width.py` uses the saved N(z)'s to calculate priors (mean and standard deviation) on the `width (w)` parameter used in `nikfilippas/yxg` and `nikfilippas/yxgxk` to modify the redshift distributions.
 
 ## Other scripts
-6. `mk_dndz` uses the saved weights to calculate and save the DIR-calibrated redshifts in `data/dndz/*DIR.txt`; ready to be used in modelling of N(z)'s.
+6. `mk_dndz` uses the saved weights to calculate and save *smoothed* DIR-calibrated redshifts (as opposed to `nz.py` which calculates raw distributions) in `data/dndz/*DIR.txt`; ready to be used in modelling of N(z)'s.
 7. `mk_maps.py` uses the catalogues to create maps of galaxy overdensity (`\Delta_g`) in each redshift bin.
 8. `DIR.py` contains the functions to perform DIR calibration.
 9. `funcs.py` contains other useful functions used in the pipeline.
