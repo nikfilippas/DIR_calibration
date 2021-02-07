@@ -9,10 +9,11 @@ fname_data_spec = "data/cats/zSpec-comp-WIxSC.csv"
 
 print("Loading photo-z & spec-z catalogues...")
 f_ph = pd.read_csv(fname_data_phot)
+f_sp = pd.read_csv(fname_data_spec)
+
 # saving memory
 get_rid = ["wiseX", "wiseID", "scosID", "cx", "cy", "cz", "htmID", "ebv", "zPhoto_ANN", "fromAllSky"]
 f_ph.drop(inplace=True, columns=get_rid)
-f_sp = pd.read_csv(fname_data_spec)
 get_rid = ["W1c", "W2c", "Bcc", "Rcc", "w1sigmpro", "w2sigmpro", "errB", "errR", "zCorr"]
 f_sp.drop(inplace=True, columns=get_rid)
 
