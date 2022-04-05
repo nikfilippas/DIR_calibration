@@ -18,8 +18,8 @@ class xref(object):
             Path to data.
     """
     def __init__(self, fname_data):
-        self.is_fits = (fname_data.split(".")[-1] == "fits")
-        self.is_csv = (fname_data.split(".")[-1] == "csv")
+        self.is_fits = "fits" in fname_data
+        self.is_csv = "csv" in fname_data
         hp.disable_warnings()
         if self.is_fits:
             self.cat = fits.open(fname_data)[1].data
@@ -48,8 +48,8 @@ class xref(object):
                                                     use_pixel_weights=False)
         self.nside = hp.npix2nside(self.mask.size)
         ipix = hp.ang2pix(self.nside,
-                          self.cat[lon_name],
-                          self.cat[lat_name],
+                          np.asarray(self.cat[lon_name]),
+                          np.asarray(self.cat[lat_name]),
                           lonlat=True)
         self.cat = self.cat[self.mask[ipix] > 0.5]
         self.cat_fid = self.cat

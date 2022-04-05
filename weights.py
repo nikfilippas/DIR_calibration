@@ -5,10 +5,10 @@ calibration of the 2MPZ and WIxSC bins.
 from DIR import xref, weights
 
 # global
-fname_mask = "data/maps/mask_v3.fits"
+fname_mask = "data/maps/mask_v3.fits.gz"
 
 ## 2MPZ ##
-fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits"
+fname_data = "data/cats/2MPZ_FULL_wspec_coma_complete.fits.gz"
 colors = ["JCORR", "HCORR", "KCORR", "W1MCORR",
           "W2MCORR", "BCALCORR", "RCALCORR", "ICALCORR"]
 print("2MPZ")
@@ -19,6 +19,7 @@ q.cutoff("ZPHOTO", [-1.00, 0.10])
 cat = q.cat_fid  # photo-z sample
 q.cutoff("ZSPEC", -999)
 xcat = q.cat_fid  # spec-z sample
+print(len(xcat) / len(cat))
 # spectroscopic sample weights
 weights(xcat, cat, colors, verbose=True, save="out/weights_2mpz")
 
@@ -36,5 +37,6 @@ for i in range(1, 6):
     cat = q.cat_fid  # photo-z sample
     q.cutoff("Zspec", -999)
     xcat = q.cat_fid  # spec-z sample
+    print(len(xcat) / len(cat))
     # spectroscopic sample weights
     weights(xcat, cat, colors, verbose=True, save="out/weights_wisc%d" % i)
